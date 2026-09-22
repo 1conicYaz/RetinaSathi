@@ -1,0 +1,498 @@
+{
+  "status": "internal_validation_robustness_only",
+  "checkpoint_sha256": "dd63549c3630210b7fe25fc705d5538803d6d1350da257c829a9d247029bc761",
+  "official_test_used": false,
+  "groups": {
+    "normal": {
+      "samples": 83,
+      "quality_gate_rejected": 0,
+      "quality_gate_rejection_rate": 0.0,
+      "prediction_consistency_vs_normal": 1.0,
+      "uncertain_count_confidence_below_0_60": 16,
+      "metrics": {
+        "qwk": 0.8970264537559531,
+        "macro_f1": 0.660483536427275,
+        "balanced_accuracy": 0.6262962962962962,
+        "per_class_recall": [
+          1.0,
+          0.25,
+          0.8148148148148148,
+          0.6666666666666666,
+          0.4
+        ],
+        "referable_sensitivity": 0.9615384615384616,
+        "referable_specificity": 1.0,
+        "confusion_matrix": [
+          [
+            27,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2,
+            1,
+            1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            22,
+            4,
+            0
+          ],
+          [
+            0,
+            0,
+            5,
+            10,
+            0
+          ],
+          [
+            0,
+            0,
+            3,
+            3,
+            4
+          ]
+        ],
+        "ece": 0.08433495731238862,
+        "multiclass_brier": 0.3388234804575036
+      }
+    },
+    "dark": {
+      "samples": 83,
+      "quality_gate_rejected": 63,
+      "quality_gate_rejection_rate": 0.7590361445783133,
+      "prediction_consistency_vs_normal": 0.7590361445783133,
+      "uncertain_count_confidence_below_0_60": 10,
+      "metrics": {
+        "qwk": 0.7438784915641407,
+        "macro_f1": 0.4510870178208887,
+        "balanced_accuracy": 0.45555555555555555,
+        "per_class_recall": [
+          1.0,
+          0.0,
+          0.7777777777777778,
+          0.2,
+          0.3
+        ],
+        "referable_sensitivity": 0.8653846153846154,
+        "referable_specificity": 1.0,
+        "confusion_matrix": [
+          [
+            27,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            4,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            4,
+            1,
+            21,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            12,
+            3,
+            0
+          ],
+          [
+            2,
+            0,
+            2,
+            3,
+            3
+          ]
+        ],
+        "ece": 0.18578489035008902,
+        "multiclass_brier": 0.5107697408810462
+      }
+    },
+    "overexposed": {
+      "samples": 83,
+      "quality_gate_rejected": 0,
+      "quality_gate_rejection_rate": 0.0,
+      "prediction_consistency_vs_normal": 0.7228915662650602,
+      "uncertain_count_confidence_below_0_60": 33,
+      "metrics": {
+        "qwk": 0.805184795936241,
+        "macro_f1": 0.5274220032840722,
+        "balanced_accuracy": 0.5496296296296296,
+        "per_class_recall": [
+          0.8888888888888888,
+          0.0,
+          0.5925925925925926,
+          0.6666666666666666,
+          0.6
+        ],
+        "referable_sensitivity": 0.8653846153846154,
+        "referable_specificity": 0.8709677419354839,
+        "confusion_matrix": [
+          [
+            24,
+            0,
+            2,
+            1,
+            0
+          ],
+          [
+            3,
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            16,
+            6,
+            2
+          ],
+          [
+            1,
+            0,
+            1,
+            10,
+            3
+          ],
+          [
+            0,
+            0,
+            1,
+            3,
+            6
+          ]
+        ],
+        "ece": 0.13588079846048928,
+        "multiclass_brier": 0.46895912566357006
+      }
+    },
+    "blurred": {
+      "samples": 83,
+      "quality_gate_rejected": 0,
+      "quality_gate_rejection_rate": 0.0,
+      "prediction_consistency_vs_normal": 0.8795180722891566,
+      "uncertain_count_confidence_below_0_60": 7,
+      "metrics": {
+        "qwk": 0.8812006706743549,
+        "macro_f1": 0.5139539321248467,
+        "balanced_accuracy": 0.5185185185185185,
+        "per_class_recall": [
+          1.0,
+          0.0,
+          0.9259259259259259,
+          0.26666666666666666,
+          0.4
+        ],
+        "referable_sensitivity": 0.9807692307692307,
+        "referable_specificity": 0.967741935483871,
+        "confusion_matrix": [
+          [
+            27,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            25,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            10,
+            4,
+            1
+          ],
+          [
+            0,
+            0,
+            3,
+            3,
+            4
+          ]
+        ],
+        "ece": 0.14148101497845475,
+        "multiclass_brier": 0.42380923267470144
+      }
+    },
+    "low_contrast": {
+      "samples": 83,
+      "quality_gate_rejected": 12,
+      "quality_gate_rejection_rate": 0.14457831325301204,
+      "prediction_consistency_vs_normal": 0.7831325301204819,
+      "uncertain_count_confidence_below_0_60": 14,
+      "metrics": {
+        "qwk": 0.7580754641645039,
+        "macro_f1": 0.45516708922213833,
+        "balanced_accuracy": 0.46296296296296297,
+        "per_class_recall": [
+          1.0,
+          0.0,
+          0.8148148148148148,
+          0.2,
+          0.3
+        ],
+        "referable_sensitivity": 0.7884615384615384,
+        "referable_specificity": 1.0,
+        "confusion_matrix": [
+          [
+            27,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            4,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            4,
+            0,
+            22,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            12,
+            3,
+            0
+          ],
+          [
+            2,
+            0,
+            1,
+            4,
+            3
+          ]
+        ],
+        "ece": 0.20713090645261556,
+        "multiclass_brier": 0.5343332526735192
+      }
+    },
+    "resolution_256": {
+      "samples": 83,
+      "quality_gate_rejected": 0,
+      "quality_gate_rejection_rate": 0.0,
+      "prediction_consistency_vs_normal": 0.891566265060241,
+      "uncertain_count_confidence_below_0_60": 15,
+      "metrics": {
+        "qwk": 0.890224840687748,
+        "macro_f1": 0.5444476728544525,
+        "balanced_accuracy": 0.5451851851851852,
+        "per_class_recall": [
+          1.0,
+          0.0,
+          0.9259259259259259,
+          0.4,
+          0.4
+        ],
+        "referable_sensitivity": 0.9615384615384616,
+        "referable_specificity": 1.0,
+        "confusion_matrix": [
+          [
+            27,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            4,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            25,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            8,
+            6,
+            1
+          ],
+          [
+            0,
+            0,
+            3,
+            3,
+            4
+          ]
+        ],
+        "ece": 0.061162152563232965,
+        "multiclass_brier": 0.3784566610631925
+      }
+    },
+    "resolution_1024": {
+      "samples": 83,
+      "quality_gate_rejected": 0,
+      "quality_gate_rejection_rate": 0.0,
+      "prediction_consistency_vs_normal": 0.8433734939759037,
+      "uncertain_count_confidence_below_0_60": 19,
+      "metrics": {
+        "qwk": 0.8351342761798825,
+        "macro_f1": 0.5836802180869978,
+        "balanced_accuracy": 0.5655555555555556,
+        "per_class_recall": [
+          1.0,
+          0.25,
+          0.7777777777777778,
+          0.6,
+          0.2
+        ],
+        "referable_sensitivity": 0.9423076923076923,
+        "referable_specificity": 1.0,
+        "confusion_matrix": [
+          [
+            27,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2,
+            1,
+            1,
+            0,
+            0
+          ],
+          [
+            2,
+            0,
+            21,
+            4,
+            0
+          ],
+          [
+            0,
+            0,
+            5,
+            9,
+            1
+          ],
+          [
+            1,
+            0,
+            2,
+            5,
+            2
+          ]
+        ],
+        "ece": 0.09352458995508857,
+        "multiclass_brier": 0.35976642519298574
+      }
+    },
+    "partially_cropped": {
+      "samples": 83,
+      "quality_gate_rejected": 0,
+      "quality_gate_rejection_rate": 0.0,
+      "prediction_consistency_vs_normal": 0.8554216867469879,
+      "uncertain_count_confidence_below_0_60": 19,
+      "metrics": {
+        "qwk": 0.8442279279639021,
+        "macro_f1": 0.5186501906431772,
+        "balanced_accuracy": 0.5237037037037037,
+        "per_class_recall": [
+          1.0,
+          0.0,
+          0.8518518518518519,
+          0.4666666666666667,
+          0.3
+        ],
+        "referable_sensitivity": 0.9423076923076923,
+        "referable_specificity": 0.967741935483871,
+        "confusion_matrix": [
+          [
+            27,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            23,
+            3,
+            0
+          ],
+          [
+            0,
+            0,
+            7,
+            7,
+            1
+          ],
+          [
+            1,
+            0,
+            2,
+            4,
+            3
+          ]
+        ],
+        "ece": 0.1518485362989357,
+        "multiclass_brier": 0.38852477042028966
+      }
+    }
+  },
+  "synthetic_api_safety_cases": {
+    "black_frame": "covered_by_compute_test",
+    "non_fundus": "covered_by_compute_test",
+    "corrupt_image": "covered_by_api_test",
+    "large_file": "covered_by_api_test"
+  },
+  "limitations": [
+    "Perturbations are deterministic simulations, not prospective capture failures.",
+    "Classifier metrics include all images; quality-gate rejection is reported separately.",
+    "No official IDRiD test or Messidor image is accessed by this script."
+  ]
+}

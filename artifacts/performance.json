@@ -1,0 +1,30 @@
+{
+  "runtime": "onnxruntime_cpu",
+  "model_version": "v2.0.0",
+  "runs_after_warmup": 20,
+  "input": "deterministic_synthetic_fundus_1024px",
+  "preprocessing_ms": {
+    "median": 17.05,
+    "p95": 17.18
+  },
+  "classifier_ms": {
+    "median": 177.99,
+    "p95": 179.38
+  },
+  "total_screening_ms": {
+    "median": 222.88,
+    "p95": 223.74
+  },
+  "process_peak_rss_mib": 478.45,
+  "model_size_mib": {
+    "classifier": 40.78
+  },
+  "segmentation_latency_ms": null,
+  "cloud_configured_memory_mib": 512,
+  "limitations": [
+    "Synthetic input benchmark",
+    "Concurrent workloads can affect timings",
+    "Only explicitly supplied auxiliary models are measured",
+    "Cloud live RSS is not exposed by the service"
+  ]
+}

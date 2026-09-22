@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "model_version": "classifier-v3.4-seed26038",
+  "created_at": "2026-09-21T20:20:08.434156+00:00",
+  "research_status": "candidate_source_gate_passed",
+  "official_test_used": false,
+  "checkpoint": {
+    "path": "runs/v3_4_seed_26038_mps_progress_20260920_gpu/best.pt",
+    "sha256": "0407cbf0402e9e791307045e8d42b38ad188bec19b5ddc58f454d14f3f677f39"
+  },
+  "validation": {
+    "path": "runs/v3_4_seed_26038_mps_progress_20260920_gpu/final_validation.json",
+    "sha256": "b684c4762b56f623cd13474b51754416e077976be8e1de0bc56669e7b2b5441c"
+  },
+  "onnx": {
+    "path": "models/retinasathi-v3-4.onnx",
+    "sha256": "8d5373211b8651e1a3c787a19bfd52a64383d8a2296f370cbf2615467422b2ec"
+  },
+  "input": {
+    "name": "image",
+    "shape": [
+      1,
+      3,
+      392,
+      392
+    ],
+    "layout": "NCHW",
+    "dtype": "float32",
+    "preprocessing": {
+      "retinal_crop": true,
+      "remove_black_border": true,
+      "aspect_ratio_safe_resize": true,
+      "enhancement": "ben_graham",
+      "color_normalization": false,
+      "input_size": 392
+    },
+    "normalization_mean_rgb": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "normalization_std_rgb": [
+      0.229,
+      0.224,
+      0.225
+    ]
+  },
+  "outputs": [
+    "referable_logit",
+    "ordinal_logits",
+    "nominal_logits"
+  ],
+  "calibration": {
+    "ordinal_temperature": 1.1924316883087158,
+    "nominal_temperature": 0.8834289908409119,
+    "binary_temperature": 1.3661274909973145,
+    "referable_threshold": 0.20732617378234863,
+    "grade_fusion": "0.5 * ordinal_probabilities + 0.5 * nominal_softmax"
+  },
+  "foundation_model": {
+    "model_name": "dinov2_vits14",
+    "publisher": "Meta AI Research",
+    "repository_url": "https://github.com/facebookresearch/dinov2",
+    "resolved_commit": "7764ea0f912e53c92e82eb78a2a1631e92725fc8",
+    "weight_url": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth",
+    "weight_bytes": 88283115,
+    "weight_sha256": "b938bf1bc15cd2ec0feacfe3a1bb553fe8ea9ca46a7e1d8d00217f29aef60cd9",
+    "architecture": "ViT-S/14",
+    "parameters": 21000000,
+    "embedding_dimension": 384,
+    "patch_size": 14,
+    "pretraining_dataset": "LVD-142M",
+    "license": "Apache-2.0",
+    "license_sha256": "600cc67cc4cb2f5ea317dcfc687ad1c74dc4bec8782bbe9db0afd83513b935b7",
+    "accessed_at": "2026-09-20",
+    "verification": {
+      "input_shape": [
+        1,
+        3,
+        392,
+        392
+      ],
+      "output_shape": [
+        1,
+        384
+      ],
+      "finite": true
+    }
+  },
+  "pytorch_onnx_max_abs_difference": {
+    "referable_logit": 2.1457672119140625e-06,
+    "ordinal_logits": 2.7120113372802734e-06,
+    "nominal_logits": 2.384185791015625e-06
+  },
+  "limitations": [
+    "Research screening support only; human review is required.",
+    "DME is not assessed by this model.",
+    "Source validation is not prospective clinical validation."
+  ]
+}

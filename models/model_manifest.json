@@ -1,0 +1,231 @@
+{
+  "schema_version": "1.0",
+  "models": [
+    {
+      "model_id": "retinasathi-dr-dme-baseline-v1",
+      "version": "idrid-mobilenetv3-multitask-v0.1",
+      "status": "baseline_v1",
+      "architecture": "MobileNetV3 Small with DR and DME heads",
+      "input_resolution": [224, 224],
+      "training_dataset": "IDRiD official training partition (413 records)",
+      "training_date": null,
+      "training_date_status": "not_recorded_in_original_run",
+      "git_commit": null,
+      "git_commit_status": "not_recorded_in_original_run",
+      "validation_metrics": null,
+      "test_metrics": {
+        "dr_accuracy": 0.5145631067961165,
+        "dr_macro_f1": 0.36086355321134894,
+        "dr_qwk": 0.4935227017447521,
+        "dme_accuracy": 0.5922330097087378,
+        "dme_macro_f1": 0.4537879283641995
+      },
+      "evaluation_warning": "The official IDRiD test partition was used for V1 checkpoint selection. These are preserved development results, not unbiased final test metrics.",
+      "calibration_status": "not_calibrated",
+      "onnx_file": "compute/artifacts/idrid_multitask.onnx",
+      "onnx_sha256": "4bcd47190c6f54ce81858e9f176c0102d3c9042344d6efce4e9cd6fde8debfe6"
+    },
+    {
+      "model_id": "retinasathi-dr-v2",
+      "version": "v2.0.0",
+      "status": "locked_tested",
+      "architecture": "EfficientNet-B3 with CORAL ordinal DR head",
+      "input_resolution": [
+        512,
+        512
+      ],
+      "training_dataset": "APTOS backbone pretraining plus IDRiD internal training split",
+      "training_date": "2026-09-10",
+      "git_commit": "b70cfc849cd69b1824d6cbbcab5e3c146afc788d",
+      "checkpoint_epoch": 6,
+      "checkpoint_sha256": "dd63549c3630210b7fe25fc705d5538803d6d1350da257c829a9d247029bc761",
+      "validation_metrics": {
+        "dr_qwk": 0.8970264537559531,
+        "dr_macro_f1": 0.660483536427275,
+        "referable_sensitivity": 0.9615384615384616,
+        "referable_specificity": 1.0
+      },
+      "test_metrics": {
+        "dr_qwk": 0.6938651085990093,
+        "dr_macro_f1": 0.45200560224089636,
+        "referable_sensitivity": 0.828125,
+        "referable_specificity": 0.9230769230769231
+      },
+      "external_metrics": {
+        "messidor_referable_sensitivity": 0.4550898203592814,
+        "messidor_referable_specificity": 0.9756795422031473,
+        "messidor_balanced_accuracy": 0.7153846812812144
+      },
+      "evaluation_warning": "Locked test sensitivity misses the SIH target and external Messidor sensitivity shows material domain shift. Research screening support only.",
+      "temperature": 1.03510320186615,
+      "referable_threshold": 0.5875927209854126,
+      "dme_status": "unavailable_no_head",
+      "onnx_file": "models/retinasathi-v2.onnx",
+      "onnx_sha256": "bf7e1e050fba8c6a0bdfe49247e578723cef0883b5e8d8484bc0b007bfbfef2a",
+      "sidecar_manifest": "models/retinasathi-v2.manifest.json"
+    },
+    {
+      "model_id": "retinasathi-quality-v2",
+      "version": "v2.0.0",
+      "status": "ready_experimental_optional",
+      "architecture": "MobileNetV3-Small quality and attribute heads",
+      "dataset": "DeepDRiD official patient-separated partitions",
+      "training_date": "2026-09-10",
+      "git_commit": "3b43ead710dc4fa114d7eadab39220e04d25639c",
+      "input_resolution": [
+        384,
+        384
+      ],
+      "validation_metrics": {
+        "auroc": 0.8179251940719829,
+        "macro_f1": 0.7308836197410697,
+        "good_sensitivity": 0.8901098901098901,
+        "poor_specificity": 0.6009174311926605
+      },
+      "operating_threshold": 0.5523584485054016,
+      "checkpoint_sha256": "d87f6643fd958ebe2e937516a1b75a1585bf164d208919213bf72ecd0c2462ee",
+      "onnx_file": "models/retinasathi-quality-v2.onnx",
+      "onnx_sha256": "3d941a5b17d600c90f1af30cff3de8856b82c27df0fbd52f039337b8412a04a2",
+      "deployment_warning": "Optional conservative fusion only. It rejected deterministic-gradeable demo images and cannot replace hard corruption/black-frame rules."
+    },
+    {
+      "model_id": "retinasathi-lesions-v2",
+      "version": "v2.0.0",
+      "status": "trained_experimental_not_deployable",
+      "architecture": "Compact U-Net",
+      "dataset": "IDRiD internal segmentation split",
+      "training_date": "2026-09-10",
+      "git_commit": "dd93f35c5ced0835e1656c9f312f6bc1769308cf",
+      "classes": [
+        "microaneurysms",
+        "haemorrhages",
+        "hard_exudates",
+        "soft_exudates"
+      ],
+      "input_resolution": [
+        1024,
+        1024
+      ],
+      "validation_metrics": {
+        "mean_dice": 0.019169508533598202,
+        "dice_per_class": [
+          0.0005342027437093496,
+          0.007720199919422455,
+          0.014813565740480327,
+          0.05361006573078067
+        ]
+      },
+      "checkpoint_sha256": "719e28a95fe0a1df2d4da394894d59aac109f7d1c08a47c6334036993727a80d",
+      "onnx_file": "models/retinasathi-lesions-v2.onnx",
+      "onnx_sha256": "f8cef9e37323a2dc1625aa593388d64c3109202665f2cc0aa7fbc34113001fb8",
+      "deployment_warning": "Validation Dice is unusably low. Artifact is retained only as negative experimental evidence and is not enabled by default."
+    },
+    {
+      "model_id": "retinasathi-vessels-v2",
+      "version": "v2.0.0",
+      "status": "ready_experimental_local_only",
+      "architecture": "Compact U-Net",
+      "dataset": "DRIVE internal training/validation split",
+      "training_date": "2026-09-10",
+      "git_commit": "6d3f055781d87b1a68257fdfcb382c2024221300",
+      "input_resolution": [
+        768,
+        768
+      ],
+      "validation_metrics": {
+        "dice": 0.680211234164,
+        "iou": 0.5153940174154541,
+        "precision": 0.5959125479259609,
+        "recall": 0.7922897326143754
+      },
+      "checkpoint_sha256": "c82a211f8ad4dc53790cc15e0530b7be9300c158a76f459cb9c8251e49b61a02",
+      "onnx_file": "models/retinasathi-vessels-v2.onnx",
+      "onnx_sha256": "7abc7be997791b2b1eadf12cf3ece1bd4ea43c3bbb2f7196ec195d7968975ade",
+      "deployment_warning": "Only four internal validation images. Combined classifier/vessel smoke used 807.25 MiB RSS, above the 512 MiB cloud tier."
+    },
+    {
+      "model_id": "retinasathi-localization-v2",
+      "version": "v2.0.0",
+      "status": "ready_experimental_local_preferred",
+      "architecture": "MobileNetV3-Small heteroscedastic coordinate regressor",
+      "dataset": "IDRiD internal training/validation localization labels",
+      "training_date": "2026-09-10",
+      "git_commit": "c0596a292b64fa11a46c5d3783004e29480a47dd",
+      "input_resolution": [
+        384,
+        384
+      ],
+      "coordinate_order": [
+        "optic_disc_x",
+        "optic_disc_y",
+        "fovea_x",
+        "fovea_y"
+      ],
+      "validation_metrics": {
+        "disc_mean_normalized_error": 0.02541375160217285,
+        "fovea_mean_normalized_error": 0.024733208119869232,
+        "disc_p95_normalized_error": 0.05510789901018143,
+        "fovea_p95_normalized_error": 0.05509726330637932
+      },
+      "checkpoint_sha256": "5fe4eaf00199ceffebcd950757e7689081e2aaa09b5b2aadd891495ea345a1ed",
+      "onnx_file": "models/retinasathi-localization-v2.onnx",
+      "onnx_sha256": "680dc6730c949c14f065a8cc533da9d931490f2fc67364a979d8458634a7850b",
+      "deployment_warning": "Relative uncertainty is not a correctness probability. Combined smoke reached 501.16 MiB RSS, leaving insufficient safety margin on the 512 MiB cloud tier."
+    },
+    {
+      "model_id": "retinasathi-dr-v3-4",
+      "version": "classifier-v3.4-seed26038",
+      "status": "candidate_source_gate_passed",
+      "architecture": "Partially fine-tuned DINOv2-S/14 with referable, ordinal and nominal DR heads",
+      "input_resolution": [
+        392,
+        392
+      ],
+      "training_dataset": "APTOS 2019, IDRiD and DeepDRiD development pool with fixed fold separation",
+      "training_date": "2026-09-20",
+      "selected_seed": 26038,
+      "checkpoint_epoch": 5,
+      "checkpoint_sha256": "0407cbf0402e9e791307045e8d42b38ad188bec19b5ddc58f454d14f3f677f39",
+      "source_validation": {
+        "dataset": "DeepDRiD held-out source-validation role",
+        "images": 400,
+        "referable_sensitivity": 0.9222222222222223,
+        "referable_specificity": 0.9136363636363637,
+        "auroc": 0.9755808080808082,
+        "auprc": 0.9744532715898437,
+        "dr_qwk": 0.7909940036900369,
+        "dr_macro_f1": 0.5338701919278015
+      },
+      "three_seed_mean": {
+        "referable_sensitivity": 0.9389,
+        "referable_specificity": 0.9061,
+        "auroc": 0.9781,
+        "auprc": 0.9763,
+        "dr_qwk": 0.8247,
+        "dr_macro_f1": 0.5666
+      },
+      "official_test_used": false,
+      "ordinal_temperature": 1.1924316883087158,
+      "nominal_temperature": 0.8834289908409119,
+      "binary_temperature": 1.3661274909973145,
+      "referable_threshold": 0.20732617378234863,
+      "dme_status": "not_assessed_no_head",
+      "onnx_file": "models/retinasathi-v3-4.onnx",
+      "onnx_sha256": "8d5373211b8651e1a3c787a19bfd52a64383d8a2296f370cbf2615467422b2ec",
+      "sidecar_manifest": "models/retinasathi-v3-4.manifest.json",
+      "matlab_parity": {
+        "cases": 25,
+        "grade_agreement": 1.0,
+        "referral_agreement": 1.0,
+        "pytorch_onnx_max_abs_difference": 2.7120113372802734e-06
+      },
+      "evaluation_warning": "Retrospective source validation and framework parity do not establish clinical validity. Exact-grade recall remains weak, DME is unavailable, and every output requires human review."
+    },
+    {
+      "model_id": "retinasathi-neovascularization-v2",
+      "version": null,
+      "status": "data_limited",
+      "reason": "No verified local neovascularization-specific labels were found."
+    }
+  ]
+}

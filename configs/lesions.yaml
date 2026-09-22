@@ -1,0 +1,19 @@
+experiment:
+  name: idrid_lesions_v1
+  seed: 26038
+  architecture: unet
+data:
+  dataset: IDRiD
+  classes: [microaneurysms, haemorrhages, hard_exudates, soft_exudates]
+  official_test_locked: true
+preprocessing:
+  input_size: 1024
+  microaneurysm_tiling: true
+  tile_size: 512
+  tile_overlap: 128
+training:
+  epochs: 40
+  batch_size: 2
+  num_workers: 2
+  gradient_accumulation: 4
+  loss: dice_bce

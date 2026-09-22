@@ -1,7 +1,7 @@
 # RetinaSathi model-selection and machine-learning approach report
 
-**Project:** RetinaSathi — Explainable diabetic-retinopathy screening support for rural India  
-**Current selected model:** V3.4, partially adapted DINOv2-S/14  
+**Project:** RetinaSathi — Explainable diabetic-retinopathy screening support for rural India
+**Current selected model:** V3.4, partially adapted DINOv2-S/14
 **Purpose:** Explain why each model was tested, what was learned, and why the current approach was selected
 
 ## 1. Simple summary
@@ -296,4 +296,3 @@ If asked whether V3.4 is clinically ready:
 - DINOv2 paper: <https://arxiv.org/abs/2304.07193>
 - RETFound official repository: <https://github.com/rmaphoh/RETFound>
 - RETFound paper: <https://www.nature.com/articles/s41586-023-06555-x>
-

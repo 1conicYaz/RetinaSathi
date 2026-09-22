@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "seed": 26038,
+  "validation_fraction": 0.2,
+  "local_manifest_directory": "runs/splits (gitignored; regenerate from licensed source labels)",
+  "aptos": {
+    "source_label_sha256": "b2a3479695922e62c83c94a1a9ef669b4b6d68cc26a1d7090ebedecdd7dd79a5",
+    "manifest_sha256": "49f2e69817b24d76f65e477788b2bb6dc141e5f282afa11bde245af449e127c5",
+    "records": 3662,
+    "grade_distribution": {
+      "train": {
+        "0": 1444,
+        "1": 296,
+        "2": 799,
+        "3": 154,
+        "4": 236
+      },
+      "validation": {
+        "0": 361,
+        "1": 74,
+        "2": 200,
+        "3": 39,
+        "4": 59
+      }
+    },
+    "missing_images": [],
+    "policy": "Stratified split of labelled Kaggle training partition only"
+  },
+  "idrid": {
+    "source_label_sha256": "789fb5a5aca296f6e01db9eb930cc41a063c681c284dbf3675628afc2a2d4ffe",
+    "manifest_sha256": "6ab0f9b12e3e8426e2b9224ca2f9d6078027d40534f271b24bdfacfb1d17080c",
+    "records": 413,
+    "grade_distribution": {
+      "train": {
+        "0": 107,
+        "1": 16,
+        "2": 109,
+        "3": 59,
+        "4": 39
+      },
+      "validation": {
+        "0": 27,
+        "1": 4,
+        "2": 27,
+        "3": 15,
+        "4": 10
+      }
+    },
+    "dme_distribution": {
+      "train": {
+        "0": 139,
+        "1": 35,
+        "2": 156
+      },
+      "validation": {
+        "0": 38,
+        "1": 6,
+        "2": 39
+      }
+    },
+    "missing_images": [],
+    "official_test": {
+      "status": "locked_not_used_for_selection",
+      "records": 103,
+      "source_label_sha256": "ced1cb8f66e126e98edde38a9b10843e6e8c3a76795b17dd57ca5abbff8ff602"
+    },
+    "patient_split_status": "patient identifiers unavailable in grading labels; image-level stratification documented"
+  },
+  "deepdrid_quality": {
+    "policy": "Use official regular-fundus training/validation partitions grouped by patient_id",
+    "train_records": 1200,
+    "validation_records": 400,
+    "train_patients": 300,
+    "validation_patients": 100,
+    "patient_overlap": [],
+    "source_hashes": {
+      "train": "0f26db5cd2cf14939f6a96732a7e9e5aef243ae70a29e099e678d412cb4c47b6",
+      "validation": "54c2f11bf0647fe3cc64496cd83646ea4a4fdf0aab82b1cd4891ad998f220332"
+    }
+  },
+  "idrid_segmentation": {
+    "records": 54,
+    "train": 43,
+    "validation": 11,
+    "manifest_sha256": "497f5487162c8fe15d4184071fa500cddc69f217462508f870c88dc02d32a1f4",
+    "official_test": {
+      "status": "locked_not_used_for_selection",
+      "records": 27
+    }
+  },
+  "drive_vessels": {
+    "records": 20,
+    "train": 16,
+    "validation": 4,
+    "manifest_sha256": "a5dccc3e41fa79dea02a4df3ef0e0dee0277abe93717e807ee6cab3f4fab3206",
+    "official_test": {
+      "status": "locked_not_used_for_selection",
+      "records": 20
+    }
+  }
+}

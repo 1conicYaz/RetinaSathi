@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "model_version": "v2.0.0",
+  "status": "ready_experimental",
+  "task": "lesions",
+  "dataset": "IDRiD",
+  "classes": [
+    "microaneurysms",
+    "haemorrhages",
+    "hard_exudates",
+    "soft_exudates"
+  ],
+  "input_size": 1024,
+  "threshold": 0.5,
+  "preprocessing": {
+    "retinal_crop": true,
+    "aspect_ratio_safe_resize": true,
+    "enhancement": "none",
+    "color_normalization": false,
+    "resampling": "bilinear"
+  },
+  "validation": {
+    "loss": 1.6059207518895466,
+    "dice_per_class": [
+      0.0005342027437093496,
+      0.007720199919422455,
+      0.014813565740480327,
+      0.05361006573078067
+    ],
+    "iou_per_class": [
+      0.000267172734058464,
+      0.0038750580712158065,
+      0.007462052674163991,
+      0.0275433328064907
+    ],
+    "precision_per_class": [
+      0.0002744703006157189,
+      0.008951116048883951,
+      0.007472719018541785,
+      0.036654794290041225
+    ],
+    "recall_per_class": [
+      0.009948717948717949,
+      0.00678689717228572,
+      0.8394303981400756,
+      0.09975195573363863
+    ],
+    "mean_dice": 0.019169508533598202,
+    "ground_truth_positive_pixels": [
+      9750,
+      104466,
+      86025,
+      26205
+    ]
+  },
+  "official_test_used": false,
+  "checkpoint_sha256": "719e28a95fe0a1df2d4da394894d59aac109f7d1c08a47c6334036993727a80d",
+  "validation_sha256": "3a29f1247780a02920f0241dfc210219bbe5e177bb916cdc56fbb2da523b2a66",
+  "onnx_sha256": "f8cef9e37323a2dc1625aa593388d64c3109202665f2cc0aa7fbc34113001fb8",
+  "checkpoint_epoch": 7
+}

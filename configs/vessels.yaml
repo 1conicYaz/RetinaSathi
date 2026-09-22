@@ -1,0 +1,14 @@
+experiment:
+  name: drive_vessels_v1
+  seed: 26038
+  architecture: unet
+data:
+  dataset: DRIVE
+  official_test_locked: true
+preprocessing:
+  input_size: 768
+training:
+  epochs: 40
+  batch_size: 2
+  num_workers: 2
+  loss: dice_bce

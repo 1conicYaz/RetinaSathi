@@ -1,0 +1,10 @@
+{
+  "name": "RetinaSathi DR Screening",
+  "short_name": "RetinaSathi",
+  "description": "Explainable diabetic-retinopathy screening support for frontline health workers.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f6f0",
+  "theme_color": "#0d5c4d",
+  "icons": [{ "src": "/retina-logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

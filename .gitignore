@@ -1,0 +1,57 @@
+# Dependencies and build output
+node_modules/
+.venv/
+venv/
+dist/
+dist-ssr/
+__pycache__/
+*.pyc
+
+# Logs and local environment
+logs/
+*.log
+.env
+.env.*
+!.env.example
+*.local
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+*.sw?
+
+# Backend link state and credentials
+.insforge/project.json
+credentials/
+kaggle.json
+
+# Raw or licensed medical data
+SIH26038_Datasets/
+datasets/
+raw/
+*.zip
+*.tar
+*.tar.gz
+
+# Generated model and experiment artifacts
+*.pt
+*.pth
+*.ckpt
+*.onnx
+runs/
+artifacts/*
+!artifacts/dataset_inventory.json
+!artifacts/split_summary.json
+!artifacts/performance.json
+!artifacts/robustness_evaluation.json
+!artifacts/explainability_evaluation.json
+
+# Generated MATLAB and Simulink state
+simulink/results/*.mat
+simulink/results/**/*.mat
+simulink/slprj/
+*.slxc
+*.autosave
+matlab/+idrid_multitask/
+matlab/+retinasathi_v3_4/

@@ -1,0 +1,49 @@
+experiment:
+  name: classifier_v2
+  seed: 26038
+  architecture: efficientnet_b3
+  pilot_architectures: [efficientnet_b3, efficientnet_v2_s, convnext_tiny]
+  pilot_epochs: 2
+data:
+  root: ${RETINASATHI_DATA_ROOT}
+  split_dir: runs/splits
+  aptos_pretrain: true
+  idrid_finetune: true
+  include_eyepacs: false
+preprocessing:
+  retinal_crop: true
+  remove_black_border: true
+  aspect_ratio_safe_resize: true
+  enhancement: ben_graham
+  color_normalization: false
+  input_size: 384
+  compare_input_sizes: [384, 512]
+augmentation:
+  horizontal_flip_probability: 0.5
+  rotation_degrees: 12
+  brightness: 0.12
+  contrast: 0.12
+  saturation: 0.08
+  translation_fraction: 0.03
+training:
+  objective: coral
+  compare_cross_entropy: true
+  imbalance: weighted_sampler
+  epochs: 40
+  aptos_epochs: 15
+  idrid_epochs: 40
+  batch_size: 8
+  gradient_accumulation: 2
+  learning_rate: 0.0002
+  weight_decay: 0.0001
+  scheduler: cosine
+  early_stopping_patience: 8
+  mixed_precision: auto
+  num_workers: 4
+  dme_weight: 0.25
+  compare_dr_only: true
+selection:
+  primary_metric: qwk
+  calibrate: temperature_scaling
+  referable_threshold_metric: youden_j
+  official_test_locked: true

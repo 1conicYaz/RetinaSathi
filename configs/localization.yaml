@@ -1,0 +1,16 @@
+experiment:
+  name: idrid_disc_fovea_v1
+  seed: 26038
+  architecture: mobilenet_v3_small
+data:
+  dataset: IDRiD
+  official_test_locked: true
+preprocessing:
+  input_size: 384
+  aspect_ratio_safe_resize: true
+training:
+  epochs: 35
+  batch_size: 8
+  num_workers: 4
+  early_stopping_patience: 7
+  learning_rate: 0.0002

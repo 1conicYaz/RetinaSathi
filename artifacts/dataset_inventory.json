@@ -1,0 +1,577 @@
+{
+  "schema_version": "1.0",
+  "dataset_root": "${RETINASATHI_DATA_ROOT}",
+  "scanner_policy": {
+    "read_only": true,
+    "paths_are_relative": true,
+    "large_archive_hashes": "skipped",
+    "counts_use_canonical_roots_only": true
+  },
+  "datasets": [
+    {
+      "name": "APTOS_2019",
+      "present": true,
+      "purpose": "DR classification (grades 0-4)",
+      "access": "Kaggle authentication and accepted competition rules",
+      "licence": "Kaggle competition terms; do not redistribute",
+      "split_policy": "Create train/validation from labelled training data; Kaggle test labels are unavailable",
+      "grade_scale": "DR 0-4",
+      "patient_identifiers": "not present in verified label columns",
+      "annotation_types": [
+        "csv"
+      ],
+      "class_distribution": {
+        "label_partition": "train",
+        "dr_grade": {
+          "0": 1805,
+          "1": 370,
+          "2": 999,
+          "3": 193,
+          "4": 295
+        }
+      },
+      "duplicate_risk": "Extracted images plus source archive; canonical scan reports both roles but does not double-count archive contents",
+      "canonical_roots": [
+        "extracted",
+        "raw"
+      ],
+      "counts": {
+        "files": 5595,
+        "annotation": 3,
+        "archive": 1,
+        "image": 5590,
+        "other": 1
+      },
+      "split_counts": {
+        "test": {
+          "annotation": 1,
+          "image": 1928
+        },
+        "train": {
+          "annotation": 1,
+          "image": 3662
+        },
+        "unspecified": {
+          "annotation": 1,
+          "archive": 1,
+          "other": 1
+        }
+      },
+      "bytes": 20432215348,
+      "gib": 19.029,
+      "image_dimensions": {
+        "640x480": 1445,
+        "1050x1050": 1043,
+        "2416x1736": 863,
+        "2588x1958": 667,
+        "3216x2136": 410,
+        "2048x1536": 379,
+        "819x614": 332,
+        "3388x2588": 141,
+        "1504x1000": 92,
+        "1844x1226": 61,
+        "4288x2848": 52,
+        "2896x1944": 45,
+        "2144x1424": 28,
+        "1476x1117": 16,
+        "2592x1944": 6,
+        "1467x1110": 4,
+        "768x576": 2,
+        "2146x1764": 2,
+        "474x358": 2
+      },
+      "invalid_images": [],
+      "missing_files": [],
+      "annotations": [
+        {
+          "path": "APTOS_2019/extracted/sample_submission.csv",
+          "bytes": 28938,
+          "rows": 1928,
+          "sha256": "2458b54012288d495d00dade08d19fe0eebf22fe349eedf66f8cfb55b39baeb1"
+        },
+        {
+          "path": "APTOS_2019/extracted/test.csv",
+          "bytes": 25072,
+          "rows": 1928,
+          "sha256": "ea4952ca93823bf7fa59c8f5dee2eb7564a64c695c7958dc70e91fc3ef61c84c"
+        },
+        {
+          "path": "APTOS_2019/extracted/train.csv",
+          "bytes": 54948,
+          "rows": 3662,
+          "sha256": "b2a3479695922e62c83c94a1a9ef669b4b6d68cc26a1d7090ebedecdd7dd79a5"
+        }
+      ],
+      "archives": [
+        {
+          "path": "APTOS_2019/raw/aptos2019-blindness-detection.zip",
+          "bytes": 10215289875,
+          "sha256": null,
+          "hash_policy": "skipped_for_large_binary"
+        }
+      ]
+    },
+    {
+      "name": "DeepDRiD",
+      "present": true,
+      "purpose": "Image quality and DR grading",
+      "access": "Official DeepDRiD release",
+      "licence": "Bundled CC BY-SA 4.0 licence",
+      "split_policy": "Respect official training/validation/evaluation partitions and patient identifiers",
+      "grade_scale": "DR 0-4; quality fields retain official scales",
+      "patient_identifiers": "yes: explicit patient_id in official CSV files",
+      "annotation_types": [
+        "csv",
+        "xlsx"
+      ],
+      "class_distribution": {
+        "label_partition": "official regular-fundus training",
+        "overall_quality": {
+          "0": 624,
+          "1": 576
+        },
+        "patient_dr_level": {
+          "0": 360,
+          "1": 240,
+          "2": 240,
+          "3": 240,
+          "4": 120
+        },
+        "patients": 300
+      },
+      "duplicate_risk": "Source archive and extracted release coexist; image counts use extracted files only",
+      "canonical_roots": [
+        "original_extracted/DeepDRiD-1.1",
+        "raw"
+      ],
+      "counts": {
+        "files": 2280,
+        "annotation": 12,
+        "archive": 1,
+        "image": 2256,
+        "other": 11
+      },
+      "split_counts": {
+        "evaluation": {
+          "annotation": 6,
+          "image": 452,
+          "other": 3
+        },
+        "train": {
+          "annotation": 3,
+          "image": 1354,
+          "other": 3
+        },
+        "unspecified": {
+          "archive": 1,
+          "other": 2
+        },
+        "validation": {
+          "annotation": 3,
+          "image": 450,
+          "other": 3
+        }
+      },
+      "bytes": 2795455375,
+      "gib": 2.603,
+      "image_dimensions": {
+        "1736x1824": 1294,
+        "1976x1984": 660,
+        "3900x3072": 256,
+        "1734x1821": 18,
+        "2230x1725": 10,
+        "2232x1727": 10,
+        "1592x1728": 8
+      },
+      "invalid_images": [],
+      "missing_files": [],
+      "annotations": [
+        {
+          "path": "DeepDRiD/original_extracted/DeepDRiD-1.1/regular_fundus_images/Online-Challenge1&2-Evaluation/Challenge1_labels.xlsx",
+          "bytes": 15279,
+          "rows": null,
+          "sha256": "baa39963bc037e3448cd6eb8ee3f645ac0b65114300c4472f1460e9f7ff0a36d"
+        },
+        {
+          "path": "DeepDRiD/original_extracted/DeepDRiD-1.1/regular_fundus_images/Online-Challenge1&2-Evaluation/Challenge1_upload.csv",
+          "bytes": 3619,
+          "rows": 400,
+          "sha256": "8ceb20b562af0e493a64623232a57ae6ecc4fd0536c708546ff6f90c858552e2"
+        },
+        {
+          "path": "DeepDRiD/original_extracted/DeepDRiD-1.1/regular_fundus_images/Online-Challenge1&2-Evaluation/Challenge2_labels.xlsx",
+          "bytes": 21010,
+          "rows": null,
+          "sha256": "9a76b7ea16747b7a1413a66a443072a70de20a13ee063b3533c58bdf79d98f8b"
+        },
+        {
+          "path": "DeepDRiD/original_extracted/DeepDRiD-1.1/regular_fundus_images/Online-Challenge1&2-Evaluation/Challenge2_upload.csv",
+          "bytes": 4860,
+          "rows": 400,
+          "sha256": "eb55fb50dfc19d7847a7c457bdd11bf25bbc985fee550e3bac12bf795d881cea"
+        },
+        {
+          "path": "DeepDRiD/original_extracted/DeepDRiD-1.1/regular_fundus_images/regular-fundus-training/regular-fundus-source-training.csv",
+          "bytes": 70299,
+          "rows": 1200,
+          "sha256": "d066f6b0bee99656c9d828d07c0ec6c146d8d05f019e0e688abc84493abf2a45"
+        },
+        {
+          "path": "DeepDRiD/original_extracted/DeepDRiD-1.1/regular_fundus_images/regular-fundus-training/regular-fundus-training.csv",
+          "bytes": 77040,
+          "rows": 1200,
+          "sha256": "0f26db5cd2cf14939f6a96732a7e9e5aef243ae70a29e099e678d412cb4c47b6"
+        },
+        {
+          "path": "DeepDRiD/original_extracted/DeepDRiD-1.1/regular_fundus_images/regular-fundus-validation/regular-fundus-source-validation.csv",
+          "bytes": 24831,
+          "rows": 400,
+          "sha256": "c3d5bb11829268c5cc43d9daf5a3c7cf1619bbd56f5d399cb0c89fc1c6ad85cd"
+        },
+        {
+          "path": "DeepDRiD/original_extracted/DeepDRiD-1.1/regular_fundus_images/regular-fundus-validation/regular-fundus-validation.csv",
+          "bytes": 27154,
+          "rows": 400,
+          "sha256": "54c2f11bf0647fe3cc64496cd83646ea4a4fdf0aab82b1cd4891ad998f220332"
+        },
+        {
+          "path": "DeepDRiD/original_extracted/DeepDRiD-1.1/ultra-widefield_images/Online-Challenge3-Evaluation/Challenge3_labels.xlsx",
+          "bytes": 9719,
+          "rows": null,
+          "sha256": "9484e7e5cea0e7f84f86cd9173313d9efdc41a16666f04651bcc5ff548c24c01"
+        },
+        {
+          "path": "DeepDRiD/original_extracted/DeepDRiD-1.1/ultra-widefield_images/Online-Challenge3-Evaluation/Challenge3_upload.csv",
+          "bytes": 455,
+          "rows": 52,
+          "sha256": "7b218bb3a349c4b6757fee2cada9a002709b53cd421979cb2863469370fd88fd"
+        },
+        {
+          "path": "DeepDRiD/original_extracted/DeepDRiD-1.1/ultra-widefield_images/ultra-widefield-training/ultra-widefield-training.csv",
+          "bytes": 9309,
+          "rows": 154,
+          "sha256": "367f3b01b6ac299339d4adf534a940aa3ed36b637fa0ad93b05f83d77f9893c9"
+        },
+        {
+          "path": "DeepDRiD/original_extracted/DeepDRiD-1.1/ultra-widefield_images/ultra-widefield-validation/ultra-widefield-validation.csv",
+          "bytes": 3125,
+          "rows": 50,
+          "sha256": "ee55968acf0b2058efdc9f8572a56fcaa70b85f0401e665d42bcd29c6ee85a54"
+        }
+      ],
+      "archives": [
+        {
+          "path": "DeepDRiD/raw/DeepDRiD-v1.1.zip",
+          "bytes": 1373391081,
+          "sha256": null,
+          "hash_policy": "skipped_for_large_binary"
+        }
+      ]
+    },
+    {
+      "name": "IDRiD",
+      "present": true,
+      "purpose": "DR/DME grading, lesion segmentation, optic-disc and fovea localization",
+      "access": "Official IEEE DataPort / challenge release",
+      "licence": "CC BY 4.0 stated by the official release",
+      "split_policy": "Official test is locked; derive V2 train/validation only from official training",
+      "grade_scale": "DR 0-4; DME risk 0-2",
+      "patient_identifiers": "not present in verified grading label columns",
+      "annotation_types": [
+        "csv",
+        "tif"
+      ],
+      "class_distribution": {
+        "label_partition": "official training only",
+        "dr_grade": {
+          "0": 134,
+          "1": 20,
+          "2": 136,
+          "3": 74,
+          "4": 49
+        },
+        "dme_risk": {
+          "0": 177,
+          "1": 41,
+          "2": 195
+        }
+      },
+      "duplicate_risk": "The same fundus may appear in grading, segmentation, and localization tasks; task files are not unique patients",
+      "canonical_roots": [
+        "images",
+        "masks",
+        "grading"
+      ],
+      "counts": {
+        "files": 1482,
+        "annotation": 6,
+        "image": 1113,
+        "mask": 363
+      },
+      "split_counts": {
+        "test": {
+          "annotation": 3,
+          "image": 233,
+          "mask": 122
+        },
+        "train": {
+          "annotation": 3,
+          "image": 880,
+          "mask": 241
+        }
+      },
+      "bytes": 1008788902,
+      "gib": 0.94,
+      "image_dimensions": {
+        "4288x2848": 1113
+      },
+      "invalid_images": [],
+      "missing_files": [],
+      "annotations": [
+        {
+          "path": "IDRiD/grading/B. Disease Grading/2. Groundtruths/a. IDRiD_Disease Grading_Training Labels.csv",
+          "bytes": 9975,
+          "rows": 413,
+          "sha256": "789fb5a5aca296f6e01db9eb930cc41a063c681c284dbf3675628afc2a2d4ffe"
+        },
+        {
+          "path": "IDRiD/grading/B. Disease Grading/2. Groundtruths/b. IDRiD_Disease Grading_Testing Labels.csv",
+          "bytes": 1598,
+          "rows": 103,
+          "sha256": "ced1cb8f66e126e98edde38a9b10843e6e8c3a76795b17dd57ca5abbff8ff602"
+        },
+        {
+          "path": "IDRiD/grading/C. Localization/2. Groundtruths/1. Optic Disc Center Location/a. IDRiD_OD_Center_Training Set_Markups.csv",
+          "bytes": 32210,
+          "rows": 515,
+          "sha256": "4261db60aea28f39479d95de030e7804ad42962e25ac848b0490d4b9e54f6ae2"
+        },
+        {
+          "path": "IDRiD/grading/C. Localization/2. Groundtruths/1. Optic Disc Center Location/b. IDRiD_OD_Center_Testing Set_Markups.csv",
+          "bytes": 27028,
+          "rows": 515,
+          "sha256": "57ff36d598ecfa4f3ce6bfb311288183ac1e9381d535b10d8ba23e7785e66dc8"
+        },
+        {
+          "path": "IDRiD/grading/C. Localization/2. Groundtruths/2. Fovea Center Location/IDRiD_Fovea_Center_Testing Set_Markups.csv",
+          "bytes": 27070,
+          "rows": 515,
+          "sha256": "dead5a5b5026422bc66367b7420dc0554ab7f6eec3e8a5c161faf9d7b5c237c9"
+        },
+        {
+          "path": "IDRiD/grading/C. Localization/2. Groundtruths/2. Fovea Center Location/IDRiD_Fovea_Center_Training Set_Markups.csv",
+          "bytes": 32337,
+          "rows": 515,
+          "sha256": "6fcbc51d43e28cf584ae6afa7997ea650b40687a753af72e62dd3282da0989e3"
+        }
+      ],
+      "archives": []
+    },
+    {
+      "name": "DRIVE",
+      "present": true,
+      "purpose": "Retinal vessel segmentation",
+      "access": "DRIVE Grand Challenge membership",
+      "licence": "Official site terms",
+      "split_policy": "Use official training images for fitting; report official test only after model lock",
+      "grade_scale": "not applicable",
+      "patient_identifiers": "not present in verified file layout",
+      "annotation_types": [
+        "gif"
+      ],
+      "class_distribution": {
+        "status": "not available from a verified plain-text label file"
+      },
+      "duplicate_risk": "One photograph has image, FOV, and one or two manual masks; file count is not photograph count",
+      "canonical_roots": [
+        "training",
+        "test"
+      ],
+      "counts": {
+        "files": 101,
+        "image": 40,
+        "mask": 60,
+        "other": 1
+      },
+      "split_counts": {
+        "test": {
+          "image": 20,
+          "mask": 20
+        },
+        "train": {
+          "image": 20,
+          "mask": 40
+        },
+        "unspecified": {
+          "other": 1
+        }
+      },
+      "bytes": 29986881,
+      "gib": 0.028,
+      "image_dimensions": {
+        "565x584": 40
+      },
+      "invalid_images": [],
+      "missing_files": [],
+      "annotations": [],
+      "archives": []
+    },
+    {
+      "name": "Messidor",
+      "present": true,
+      "purpose": "External DR validation (grades 0-3) and macular-edema risk (0-2)",
+      "access": "ADCIS form and email verification",
+      "licence": "Research/education access; do not redistribute",
+      "split_policy": "External validation only; never merge labels blindly with a 0-4 training scale",
+      "grade_scale": "DR 0-3; macular-edema risk 0-2",
+      "patient_identifiers": "not verified in legacy workbook labels",
+      "annotation_types": [
+        "xls"
+      ],
+      "class_distribution": {
+        "status": "not available from a verified plain-text label file"
+      },
+      "duplicate_risk": "Original extraction and normalized image views coexist; canonical image view only",
+      "canonical_roots": [
+        "images",
+        "annotations"
+      ],
+      "counts": {
+        "files": 1212,
+        "annotation": 12,
+        "image": 1200
+      },
+      "split_counts": {
+        "unspecified": {
+          "annotation": 12,
+          "image": 1200
+        }
+      },
+      "bytes": 8701662496,
+      "gib": 8.104,
+      "image_dimensions": {
+        "1440x960": 588,
+        "2240x1488": 400,
+        "2304x1536": 212
+      },
+      "invalid_images": [],
+      "missing_files": [],
+      "annotations": [
+        {
+          "path": "Messidor/annotations/Annotation Base12.xls",
+          "bytes": 23040,
+          "rows": null,
+          "sha256": "72991288937a26dd32cb584b92c74608daab480217d597775dfba097936fd6d3"
+        },
+        {
+          "path": "Messidor/annotations/Annotation Base14.xls",
+          "bytes": 23040,
+          "rows": null,
+          "sha256": "474c48375c1553e49458b8165143b2ae322ae656db771fb6129174a297d1b451"
+        },
+        {
+          "path": "Messidor/annotations/Annotation Base21.xls",
+          "bytes": 23040,
+          "rows": null,
+          "sha256": "511954ba2b025fc9f5339692fca94da902b345c042e4d33aeda5e8169cea2930"
+        },
+        {
+          "path": "Messidor/annotations/Annotation Base22.xls",
+          "bytes": 23040,
+          "rows": null,
+          "sha256": "c4b34f59a7a78d2203474f4b6c5dfc57f65ff20348f7ce02293b835a80bc51fc"
+        },
+        {
+          "path": "Messidor/annotations/Annotation Base23.xls",
+          "bytes": 23040,
+          "rows": null,
+          "sha256": "ddb7dd278ec00730ccb8e3e171c702dc99d8d5887600c2c303cf577a1a6e2f81"
+        },
+        {
+          "path": "Messidor/annotations/Annotation Base24.xls",
+          "bytes": 23040,
+          "rows": null,
+          "sha256": "66dc96366bcfcbbd11ac40f2959787ae1330ff1b5566cc9ff55f2a9719818cee"
+        },
+        {
+          "path": "Messidor/annotations/Annotation Base31.xls",
+          "bytes": 25600,
+          "rows": null,
+          "sha256": "ebcce5d96ad72bf8056debb62210a55688173c27a92a5f003dcc97bcc937b206"
+        },
+        {
+          "path": "Messidor/annotations/Annotation Base32.xls",
+          "bytes": 23040,
+          "rows": null,
+          "sha256": "5d2f678e895c43be3c7896d6a0f7ea35e82a3be9e08a63b554ff664e5e525787"
+        },
+        {
+          "path": "Messidor/annotations/Annotation Base33.xls",
+          "bytes": 23040,
+          "rows": null,
+          "sha256": "68fe6b477f4e90a93bf0704c03e2f4f61a1cbe9ed7bc7ca09f2f6fc7bc43e8d2"
+        },
+        {
+          "path": "Messidor/annotations/Annotation Base34.xls",
+          "bytes": 23040,
+          "rows": null,
+          "sha256": "b4e9e4cc12b2635a0900530228fda55b6c4b1c1b8c7898cdaab2471d7aa76054"
+        },
+        {
+          "path": "Messidor/annotations/Base11/Annotation_Base11.xls",
+          "bytes": 35328,
+          "rows": null,
+          "sha256": "52dc2b0e275f92defea60fa30e0416321e9b2a2cb84ec00ee556b37881ee39d6"
+        },
+        {
+          "path": "Messidor/annotations/Base13/Annotation_Base13.xls",
+          "bytes": 35328,
+          "rows": null,
+          "sha256": "d2ff0ff28147f3aebafabacb348aa98d1f670864d821c05e38d7b3587392589f"
+        }
+      ],
+      "archives": []
+    },
+    {
+      "name": "EyePACS",
+      "present": true,
+      "purpose": "Optional large-scale DR classification (grades 0-4)",
+      "access": "Kaggle authentication and accepted competition rules",
+      "licence": "Kaggle competition terms; do not redistribute",
+      "split_policy": "Opt-in only; archive remains unextracted when disk headroom is insufficient",
+      "grade_scale": "DR 0-4",
+      "patient_identifiers": "unknown while archive remains compressed",
+      "annotation_types": [],
+      "class_distribution": {
+        "status": "not available from a verified plain-text label file"
+      },
+      "duplicate_risk": "Archive contents uninspected; left/right eye and patient grouping must be handled after extraction",
+      "canonical_roots": [
+        "raw"
+      ],
+      "counts": {
+        "files": 1,
+        "archive": 1
+      },
+      "split_counts": {
+        "unspecified": {
+          "archive": 1
+        }
+      },
+      "bytes": 88310951633,
+      "gib": 82.246,
+      "image_dimensions": {},
+      "invalid_images": [],
+      "missing_files": [],
+      "annotations": [],
+      "archives": [
+        {
+          "path": "EyePACS/raw/diabetic-retinopathy-detection.zip",
+          "bytes": 88310951633,
+          "sha256": null,
+          "hash_policy": "skipped_for_large_binary"
+        }
+      ]
+    }
+  ]
+}

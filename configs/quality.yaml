@@ -1,0 +1,17 @@
+experiment:
+  name: quality_v1
+  seed: 26038
+  architecture: mobilenet_v3_small
+data:
+  dataset: DeepDRiD
+  use_official_patient_partitions: true
+preprocessing:
+  input_size: 384
+  retinal_crop: true
+training:
+  epochs: 30
+  batch_size: 8
+  num_workers: 4
+  early_stopping_patience: 6
+labels: [Overall quality, Artifact, Clarity, Field definition]
+hard_safety_rules: [non_image, corrupt, black_frame, missing_retina]

@@ -1,0 +1,17 @@
+{
+  "status": "experimental_explainability_analysis_not_clinical_proof",
+  "checkpoint_sha256": "dd63549c3630210b7fe25fc705d5538803d6d1350da257c829a9d247029bc761",
+  "official_test_used": false,
+  "split": "IDRiD segmentation training subset held-out validation",
+  "samples": 11,
+  "samples_with_any_lesion": 11,
+  "mean_top_20pct_attention_lesion_iou": 0.06785477911400628,
+  "pointing_game_accuracy": 0.09090909090909091,
+  "mean_attention_inside_retina_fraction": 0.9879394438951938,
+  "mean_attention_outside_retina_fraction": 0.012060556104806103,
+  "limitations": [
+    "Attention is compared with the union of four lesion masks and is not a lesion prediction.",
+    "The classifier may have seen some segmentation-subset images during classifier training.",
+    "These are spatial sanity checks, not localization sensitivity or clinical validity."
+  ]
+}

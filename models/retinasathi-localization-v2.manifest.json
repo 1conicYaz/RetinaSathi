@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "model_version": "v2.0.0",
+  "status": "ready_experimental",
+  "dataset": "IDRiD localization training partition",
+  "input_size": 384,
+  "coordinate_order": [
+    "optic_disc_x",
+    "optic_disc_y",
+    "fovea_x",
+    "fovea_y"
+  ],
+  "confidence_definition": "relative confidence derived from learned heteroscedastic coordinate uncertainty; not a correctness probability",
+  "disc_error_scale": 0.05510789901018143,
+  "fovea_error_scale": 0.05509726330637932,
+  "validation": {
+    "loss": -0.152922200885686,
+    "disc_mean_normalized_error": 0.02541375160217285,
+    "fovea_mean_normalized_error": 0.024733208119869232,
+    "disc_p95_normalized_error": 0.05510789901018143,
+    "fovea_p95_normalized_error": 0.05509726330637932,
+    "disc_mean_predicted_std": 0.050023287534713745,
+    "fovea_mean_predicted_std": 0.034351542592048645
+  },
+  "official_test_used": false,
+  "checkpoint_sha256": "5fe4eaf00199ceffebcd950757e7689081e2aaa09b5b2aadd891495ea345a1ed",
+  "validation_sha256": "d785e3158792bccab8122b5cd8e2ef5647e245c11ade3916e03ae7579cdb8cf2",
+  "onnx_sha256": "680dc6730c949c14f065a8cc533da9d931490f2fc67364a979d8458634a7850b",
+  "checkpoint_epoch": 35
+}

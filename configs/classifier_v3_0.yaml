@@ -1,0 +1,45 @@
+experiment:
+  name: v3_0_efficientnet_b3_dual_head
+  seed: 26038
+  architecture: efficientnet_b3
+  validation_fold: 0
+  calibration_fold: 1
+data:
+  manifest: runs/v3_data/v3_initial_manifest.csv
+  validation_report: artifacts/v3_manifest_validation.json
+preprocessing:
+  retinal_crop: true
+  remove_black_border: true
+  aspect_ratio_safe_resize: true
+  enhancement: ben_graham
+  color_normalization: false
+  input_size: 384
+augmentation:
+  horizontal_flip_probability: 0.5
+  rotation_degrees: 12
+  brightness: 0.12
+  contrast: 0.12
+  saturation: 0.08
+  translation_fraction: 0.03
+training:
+  epochs: 20
+  batch_size: 8
+  gradient_accumulation: 2
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  early_stopping_patience: 5
+  mixed_precision: auto
+  num_workers: 0
+  dropout: 0.25
+  ordinal_loss_weight: 1.0
+  referable_loss_weight: 1.5
+  source_balanced_sampling: true
+  gradient_clip_norm: 2.0
+  tiny_overfit_per_grade: 4
+  tiny_overfit_epochs: 8
+selection:
+  checkpoint_primary: referable_auprc
+  checkpoint_tiebreaker: qwk
+  minimum_referable_sensitivity: 0.90
+  minimum_referable_specificity: 0.85
+  official_test_locked: true

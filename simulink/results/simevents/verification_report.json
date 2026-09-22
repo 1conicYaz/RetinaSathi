@@ -1,0 +1,72 @@
+[
+  {
+    "test": "SimEvents installed",
+    "passed": true,
+    "evidence": "26.1"
+  },
+  {
+    "test": "SimEvents licence",
+    "passed": true,
+    "evidence": "license('test','SimEvents') must return 1"
+  },
+  {
+    "test": "Required blocks",
+    "passed": true,
+    "evidence": "13/13 required blocks found"
+  },
+  {
+    "test": "Baseline produces visits",
+    "passed": true,
+    "evidence": "51 arrivals; 51 completed"
+  },
+  {
+    "test": "Outcome accounting",
+    "passed": true,
+    "evidence": "routine + reviewed equals completed"
+  },
+  {
+    "test": "Utilization bounds",
+    "passed": true,
+    "evidence": "all utilization values are 0–1"
+  },
+  {
+    "test": "Bandwidth calculation",
+    "passed": true,
+    "evidence": "1.500 minutes/image"
+  },
+  {
+    "test": "Bottleneck generated",
+    "passed": true,
+    "evidence": "camera at 71.7%"
+  },
+  {
+    "test": "Total screening time",
+    "passed": true,
+    "evidence": "16.17 minutes"
+  },
+  {
+    "test": "Seven scenarios",
+    "passed": true,
+    "evidence": "7 scenarios available"
+  },
+  {
+    "test": "Network constraint changes delay",
+    "passed": true,
+    "evidence": "8.10 vs 1.50 min"
+  },
+  {
+    "test": "Extra camera improves throughput",
+    "passed": true,
+    "evidence": "105 vs 68 completed"
+  },
+  {
+    "test": "Extra camera reduces queue",
+    "passed": true,
+    "evidence": "4 vs 38 waiting"
+  },
+  {
+    "test": "District exceeds 100k planning target",
+    "passed": true,
+    "evidence": "127000 annual-equivalent screenings"
+  }
+]

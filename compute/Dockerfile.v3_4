@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    MODEL_PATH=/app/artifacts/retinasathi-v3-4.onnx \
+    V3_4_ONNX_MANIFEST=/app/artifacts/retinasathi-v3-4.manifest.json \
+    V3_4_VALIDATION_REPORT=/app/artifacts/retinasathi-v3-4.validation.json \
+    PROCESSING_MODE=cloud
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY app.py model_runtime.py model_runtime_v3_4_onnx.py auxiliary_runtime.py ./
+COPY artifacts/retinasathi-v3-4.onnx artifacts/retinasathi-v3-4.manifest.json artifacts/retinasathi-v3-4.validation.json ./artifacts/
+
+EXPOSE 8080
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]

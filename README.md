@@ -1,122 +1,164 @@
-# Explainable AI for Diabetic Retinopathy Screening in Rural India
+# RetinaSathi
 
-## 1. Introduction
+RetinaSathi is a research prototype for diabetic-retinopathy screening support
+in rural workflows. It combines a retinal image pipeline, a clinician-review
+web application, native MATLAB execution of the frozen model, and an executable
+SimEvents model for clinic and district capacity planning.
 
-### The Issue
-India currently houses over 77 million diabetic adults, with Diabetic Retinopathy (DR) affecting approximately 18% of this population. While early screening can prevent up to 90% of DR-related vision loss, mass screening in rural India is fundamentally constrained by a severe shortage of specialists (roughly 1 ophthalmologist per 100,000 rural residents). Furthermore, field deployments of portable fundus cameras often yield images of variable quality, which cause existing "black-box" AI models to fail silently or produce unvalidated, untrustworthy results.
+> RetinaSathi is not a diagnostic system or a clinically approved medical
+> device. Every result requires qualified human review.
 
-### What We Are Solving
-We are developing a comprehensive, MATLAB-based retinal image analysis pipeline that automates Diabetic Retinopathy screening. This system is designed specifically for real-world rural deployment, focusing on evaluating image adequacy at the point of care, extracting relevant clinical structures, grading DR severity, and providing clinically meaningful explainability so remote specialists can validate findings in seconds.
+## Current result
 
-### Our Uniqueness
-Our solution moves beyond simple classification by integrating a **Human-in-the-Loop workflow**. Key innovations include:
-- **Instant Quality Assessment:** Automated rejection of ungradeable images with real-time recapture feedback to the field technician.
-- **Sub-Pixel Microaneurysm Detection:** Advanced extraction of minute pathological features.
-- **Clinically Grounded Explainability:** Generation of Grad-CAM attention maps and localized lesion evidence, cutting ophthalmologist review time to under 30 seconds.
-- **Simulink-Driven Telemedicine Modeling:** A discrete-event simulation that optimizes network bandwidth, edge processing throughput, and specialist review capacity at a district level.
+The selected V3.4 candidate uses a partially adapted DINOv2-S/14 encoder with
+three outputs: referable DR, ordinal Grade 0–4, and direct five-class grading.
+Three independently initialized runs produced the following source-validation
+results on the reserved DeepDRiD partition:
 
----
+| Metric | Three-seed mean | Range |
+|---|---:|---:|
+| Referable sensitivity | 93.89% | 92.22–95.00% |
+| Referable specificity | 90.61% | 89.55–91.36% |
+| AUROC | 0.9781 | 0.9756–0.9807 |
+| AUPRC | 0.9763 | 0.9745–0.9787 |
+| Quadratic weighted kappa | 0.8247 | 0.7910–0.8635 |
+| Macro-F1 | 0.5666 | 0.5339–0.6017 |
 
-## 2. Technical Approach 
+These are source-validation measurements, not prospective clinical results.
+Grade 2 varies most between seeds and Grade 4 recall remains weak. The model is
+stronger as a referable-DR screening candidate than as an autonomous five-grade
+classifier.
 
-The end-to-end technical approach spans from the initial image capture at rural primary health centers to the final diagnostic review by a district ophthalmologist.
-
-```mermaid
-graph TD
-    A[Field Fundus Camera] --> B{Image Quality Assessment}
-    B -->|Ungradeable| C[Recapture Feedback to Technician]
-    B -->|Acceptable/Borderline| D[Data Preprocessing & Enhancement]
-    D --> E[Anatomical & Lesion Segmentation]
-    E --> F[Deep Learning Severity Classifier]
-    F --> G[Explainability Module Grad-CAM]
-    G --> H[Simulink Telemedicine Queue]
-    H --> I[Ophthalmologist Dashboard Validation <30s]
-    
-    style A fill:#4A5A62,stroke:#fff,stroke-width:2px,color:#fff
-    style C fill:#ED722E,stroke:#fff,stroke-width:2px,color:#fff
-    style I fill:#248842,stroke:#fff,stroke-width:2px,color:#fff
-```
-
-### A. Data Preprocessing & Image Quality Assessment (IQA)
-- **Quality Check:** An initial lightweight algorithm checks for focus, field of view (FOV), and illumination. 
-- **Enhancement:** For borderline images, adaptive techniques like Contrast Limited Adaptive Histogram Equalization (CLAHE) and illumination normalization are applied to correct lighting artifacts without destroying pathological features.
-
-### B. Model Training
-- **Data Curation:** Training on diverse fundus datasets with bounding box and pixel-level annotations for various lesions.
-- **Architecture:** Utilizing MATLAB's Deep Learning Toolbox to train a Convolutional Neural Network (CNN) backbone (e.g., ResNet50 or EfficientNet) tailored for medical imaging.
-- **Optimization:** Class-weighting and data augmentation (rotations, color jittering) are used to handle the class imbalance between mild and severe DR cases.
-
-### C. Post-Training & Explainability
-- **Grad-CAM Integration:** Post-training, the model generates Gradient-weighted Class Activation Mapping (Grad-CAM) overlays to highlight the exact regions that influenced the model's prediction.
-- **Confidence Calibration:** Output probabilities are calibrated to represent true diagnostic confidence, preventing overconfident misdiagnoses.
-
-### D. Simulink Telemedicine Simulation & Review Distribution
-- **Network Simulation:** Using Simulink to model the queuing system of a telemedicine network. 
-- **Resource Allocation:** The simulation models varying network bandwidths, edge-device processing times, and doctor availability to dynamically distribute "Referable DR" cases to available specialists, maximizing throughput for 100,000+ patient districts.
-
----
-
-## 3. Data Classification, Extraction, and Model Working Mechanism
+## System architecture
 
 ```mermaid
 flowchart LR
-    subgraph Feature Extraction
-    M1[Optic Disc/Fovea Masking]
-    M2[Blood Vessel Segmentation]
-    M3[Pathology Detection Exudates, Hemorrhages, MA]
-    end
-    
-    subgraph Classification Engine
-    C1[Spatial Feature Concatenation]
-    C2[Multi-class CNN Classifier]
-    end
-    
-    subgraph Output Output & ICDR Grading
-    O1((Level 0: Normal))
-    O2((Level 1: Mild))
-    O3((Level 2: Moderate))
-    O4((Level 3: Severe))
-    O5((Level 4: Proliferative))
-    end
-    
-    Data[Enhanced Image] --> M1
-    Data --> M2
-    Data --> M3
-    M1 --> C1
-    M2 --> C1
-    M3 --> C1
-    Data --> C1
-    C1 --> C2
-    C2 --> O1
-    C2 --> O2
-    C2 --> O3
-    C2 --> O4
-    C2 --> O5
-    
-    style O3 fill:#ED722E,color:#fff
-    style O4 fill:#ED722E,color:#fff
-    style O5 fill:#ED722E,color:#fff
+    Camera[Fundus camera] --> Quality{Image quality}
+    Quality -->|Poor| Recapture[Recapture guidance]
+    Quality -->|Gradeable| Prep[Crop, pad and Ben Graham preprocessing]
+    Prep --> Model[V3.4 DINOv2 ONNX]
+    Model --> Grade[DR Grade 0–4]
+    Model --> Referral[Calibrated referral and uncertainty]
+    Grade --> Review[Human review]
+    Referral --> Review
+    Review --> Report[Screening-support report]
+    Report --> Store[Private storage and protected history]
 ```
-*(Levels 2, 3, and 4 represent "Referable DR" prioritized for specialist review)*
 
-### 1. Feature Extraction (Segmentation)
-Before the final classification, the model relies on the MATLAB Computer Vision and Medical Imaging toolboxes to isolate specific regions of interest:
-- **Anatomical Landmarks:** Using semantic segmentation (e.g., U-Net architectures) to mask out the Optic Disc and Fovea. This prevents the classifier from confusing the bright optic disc with hard exudates.
-- **Vessel Segmentation:** Mapping the retinal vasculature to identify abnormalities like neovascularization.
-- **Lesion Detection:** Dedicated algorithms extract microaneurysms (MAs), hard/soft exudates, and hemorrhages. Sub-pixel detection algorithms are crucial here, as MAs are often only a few pixels wide but are the earliest sign of DR.
+The V3.4 path does not claim DME assessment, lesion localization,
+neovascularization detection, or clinically validated attention maps. The
+application reports unavailable modules explicitly.
 
-### 2. Data Classification (Severity Grading)
-The problem mandates grading according to the **International Clinical Diabetic Retinopathy (ICDR) severity scale**:
-- **Level 0:** No apparent retinopathy.
-- **Level 1:** Mild Non-Proliferative DR (Microaneurysms only).
-- **Level 2:** Moderate NPDR (More than just MAs, but less than severe).
-- **Level 3:** Severe NPDR (Severe hemorrhages, venous beading, IRMA).
-- **Level 4:** Proliferative DR (Neovascularization, vitreous/preretinal hemorrhage).
+The separate SimEvents model represents operational flow:
 
-**Referable DR Threshold:** The system groups Levels 2, 3, and 4 as "Referable," requiring >90% sensitivity and >85% specificity.
+```text
+arrival → capture queue → camera → quality/recapture → network transfer
+        → AI queue → decision routing → routine outcome or clinical review
+```
 
-### 3. Model Working Mechanism
-1. **Multi-Modal Input:** The extracted segmentation masks are concatenated with the preprocessed RGB image. 
-2. **Feature Learning:** The deep learning model passes this stacked input through successive convolutional layers, extracting hierarchical features (edges in early layers, complex lesion patterns in deeper layers).
-3. **Probability Distribution:** The final fully connected layers utilize a Softmax activation function to output a probability distribution across the 5 ICDR classes.
-4. **Clinical Evidence Generation:** The explainability module reverse-engineers the decision, mapping the highest-activation nodes back to the original image space to draw bounding boxes and heatmaps directly over the detected exudates and hemorrhages. This generated report is what the remote ophthalmologist reviews.
+One SimEvents entity is one screening visit. The simulation measures queues,
+waiting time, utilization, throughput and bottlenecks; it does not run a new
+retinal image through ONNX for every synthetic entity.
+
+![Verified SimEvents workflow](docs/images/retinasathi_simevents_workflow.png)
+
+## Repository map
+
+| Path | Purpose |
+|---|---|
+| `src/` | React and TypeScript screening interface |
+| `compute/` | FastAPI inference service and runtime tests |
+| `ml/` | Data loading, models, training, calibration and evaluation |
+| `configs/` | Reproducible V3 experiment configurations |
+| `matlab/` | Native preprocessing, ONNX inference, calibration, app and tests |
+| `simulink/` | Executable SimEvents workflow, scenarios and verification |
+| `migrations/` | Database schema and row-level security migrations |
+| `artifacts/` | Small aggregate audits and provenance records |
+| `docs/` | Architecture, results, protocols and requirement evidence |
+
+Licensed retinal images, checkpoints, ONNX binaries, local credentials and
+generated MATLAB import packages are intentionally excluded from Git.
+
+## Reproduce the software checks
+
+### Web and Python
+
+```bash
+cp .env.example .env.local
+npm ci
+python3.11 -m venv .venv
+.venv/bin/python -m pip install -r compute/requirements.txt
+./scripts/run_tests.sh
+```
+
+Run the local application:
+
+```bash
+./scripts/run_full_stack_local.sh
+```
+
+V3.4 weights are not stored in this repository. Place the hash-matching ONNX
+artifact at `models/retinasathi-v3-4.onnx` before running V3.4 inference. The
+expected hash and preprocessing contract are recorded in
+`models/retinasathi-v3-4.manifest.json`.
+
+### MATLAB V3.4 parity
+
+With MATLAB R2026a and the required toolboxes:
+
+```bash
+./scripts/verify_v3_4_matlab.sh
+```
+
+Verified local result:
+
+```text
+PASS: 8 MATLAB tests, 25 parity cases, grade 1.000, referral 1.000
+```
+
+The parity cohort checks implementation consistency between Python, ONNX and
+MATLAB. It is not an independent accuracy evaluation.
+
+### SimEvents workflow
+
+```matlab
+cd('simulink')
+report = verify_simevents_workflow(true, "results/simevents");
+```
+
+Verified result:
+
+```text
+PASS: 14/14 SimEvents software checks.
+```
+
+The configured district scenario completed 508 visits in a ten-hour simulated
+day, equivalent to 127,000 screenings across 250 identical operating days. This
+is a planning estimate based on declared assumptions, not observed clinical
+throughput.
+
+![Verified SimEvents scenarios](docs/images/retinasathi_simevents_results.png)
+
+## Evidence index
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Model selection rationale](docs/MODEL_SELECTION_AND_APPROACH_REPORT.md)
+- [V3.4 results](docs/V3_4_RESULTS.md)
+- [Three-seed stability](docs/V3_4_THREE_SEED_STABILITY.md)
+- [Data card](docs/V3_DATA_CARD.md)
+- [MATLAB parity report](docs/V3_4_MATLAB_PARITY_REPORT.md)
+- [SimEvents results](docs/SIMULATION_RESULTS.md)
+- [SIH, MATLAB and Simulink audit](docs/SIH_MATLAB_SIMULINK_FULL_AUDIT.md)
+- [Clinical pilot plan](docs/V3_4_CLINICAL_PILOT_AND_APP_INTEGRATION.md)
+
+## Current limitations
+
+Before clinical use, the frozen candidate still requires an independent,
+prospective, multi-site evaluation using representative Indian cameras and
+ophthalmologist reference grades. It also requires subgroup analysis,
+deployment load testing, clinician-rated report usability, and validated
+lesion/DME/neovascularization modules if those outputs are added.
+
+The public web deployment may use an earlier lightweight model because the
+84 MB V3.4 ONNX artifact exceeds the original low-memory compute target. The
+interface always displays the active model generation and module status.

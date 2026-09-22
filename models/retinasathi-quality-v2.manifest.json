@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "model_version": "v2.0.0",
+  "status": "ready_experimental",
+  "dataset": "DeepDRiD regular fundus",
+  "input_size": 384,
+  "preprocessing": {
+    "retinal_crop": true,
+    "enhancement": "none",
+    "color_normalization": false
+  },
+  "good_probability_threshold": 0.5523584485054016,
+  "validation": {
+    "loss": 0.6087661269307136,
+    "accuracy": 0.7325,
+    "macro_f1": 0.7308836197410697,
+    "auroc": 0.8179251940719829,
+    "operating_threshold": 0.5523584485054016,
+    "good_sensitivity": 0.8901098901098901,
+    "poor_specificity": 0.6009174311926605,
+    "attribute_mae": [
+      0.21629449725151062,
+      0.13776209950447083,
+      0.13146132230758667
+    ]
+  },
+  "label_mapping": {
+    "0": "not good enough for retinal diagnosis",
+    "1": "good enough for retinal diagnosis"
+  },
+  "attribute_order": [
+    "Artifact (higher is worse)",
+    "Clarity (higher is better)",
+    "Field definition (higher is better)"
+  ],
+  "official_test_used": false,
+  "checkpoint_sha256": "d87f6643fd958ebe2e937516a1b75a1585bf164d208919213bf72ecd0c2462ee",
+  "validation_sha256": "64b658639c085a7162db239808ce5d1a5bedc4a3a5ea4bbb74e8a610259c795f",
+  "onnx_sha256": "3d941a5b17d600c90f1af30cff3de8856b82c27df0fbd52f039337b8412a04a2",
+  "checkpoint_epoch": 1
+}

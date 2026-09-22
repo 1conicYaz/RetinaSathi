@@ -1,0 +1,14 @@
+.venv/
+compute/
+ml/
+docs/
+migrations/
+artifacts/
+models/
+runs/
+matlab/
+simulink/
+scripts/
+configs/
+insforge.toml
+*.png

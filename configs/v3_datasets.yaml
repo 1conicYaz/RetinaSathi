@@ -1,0 +1,129 @@
+schema_version: "1.0"
+project: RetinaSathi V3
+grading_target: ICDR 0-4
+referable_definition: grade >= 2
+
+active_development:
+  - name: APTOS_2019
+    version: Kaggle 2019 release
+    country: India
+    role: development_pool
+    labels: DR grade 0-4
+    patient_grouping: unavailable
+    caution: Image-level grouping only; never claim patient-level independence.
+  - name: IDRiD
+    version: official challenge release
+    country: India
+    role: development_pool
+    partition: official training only
+    labels: DR grade 0-4 and DME risk 0-2
+    patient_grouping: unavailable in grading CSV
+    caution: Official grading test was consumed by V2 and is historical evidence only.
+  - name: DeepDRiD
+    version: "1.1"
+    country: China
+    role: development_pool_and_source_validation
+    labels: eye-level DR grade 0-4 and image quality
+    patient_grouping: patient_id
+    caution: Preserve official partitions and group every image from one patient.
+
+historical_evaluation_only:
+  - name: IDRiD_official_test
+    reason: V2 result already inspected; never use for V3 selection, calibration, or thresholding.
+  - name: Messidor
+    reason: V2 external result already inspected and its 0-3 scale is not interchangeable with ICDR 0-4.
+
+task_specific:
+  - name: IDRiD_segmentation
+    task: lesion segmentation and anatomy research
+    caution: Same fundus can occur in multiple IDRiD task folders.
+  - name: DRIVE
+    task: vessel segmentation only
+    caution: Do not use as a DR grading dataset.
+
+deferred_until_audit:
+  - name: EyePACS
+    role: optional large classifier source
+    status: archive copied to external SSD; extraction and audit pending
+    requirements:
+      - Verify Kaggle competition terms for the intended use.
+      - Extract only on external storage.
+      - Recover patient/left-right grouping where possible.
+      - Audit exact and near duplicates before split assignment.
+  - name: BRSET_or_mBRSET
+    role: candidate untouched external or portable-camera evaluation
+    status: not downloaded
+    caution: Brazilian evaluation cannot prove Indian clinical validation.
+  - name: DDR
+    role: optional multi-source grading and lesion development
+    status: not downloaded
+    caution: Verify official release, labels, licence, and overlap before use.
+
+researched_public_candidates_2026:
+  - name: RET_Amrita
+    country: India
+    images: 500
+    camera: Zeiss Visuscout 100 handheld non-mydriatic
+    labels: lesion and vessel masks on subsets; complete five-grade DR labels not established
+    role: Indian camera-domain, quality, anatomy, and explainability evaluation
+    status: not downloaded
+    caution: Do not map disease or lesion annotations into ICDR grades without authoritative labels.
+  - name: RFMiD_2_0
+    country: India
+    images: 860
+    labels: multi-label 51-disease classification
+    role: non-DR disease and out-of-distribution testing
+    status: downloaded from official Zenodo record; checksum verified; excluded after label-image ID audit
+    local_archive: /Volumes/External SS/RetinaSathi_Data/public_candidates/RFMiD_2_0/RFMiD2_0.zip
+    upstream_md5: f9fe268dd74825fd89a9e212c1e48624
+    audit_report: artifacts/rfmid_2_0_audit.json
+    caution: Not a five-grade DR dataset. The official archive contains label-image ID mismatches in its training and test splits, and its Zenodo page does not display a license. Do not train, redistribute, or map it into ICDR grades until reconciled and rights are confirmed.
+  - name: MFIDDR
+    country: China
+    images: 34452
+    patients: 4344
+    views: four fields per eye
+    labels: five-grade DR and age
+    role: optional grade-diversity and multi-view development
+    status: application required; not downloaded
+    caution: Verify access terms, dataset licence, storage, grouping, and duplicate policy first.
+  - name: mBRSET
+    country: Brazil
+    images: 5164
+    patients: 1291
+    camera: portable camera
+    role: optional portable-camera robustness evaluation
+    status: PhysioNet credentialed access; not downloaded
+    caution: Useful for portability but cannot prove Indian population performance.
+  - name: APTOS_repack_on_Mendeley_2025
+    images: 3662
+    status: reject pending hash audit
+    caution: Exact per-grade counts match APTOS; treat as a probable duplicate, not new evidence.
+
+foundation_model_candidates:
+  - name: RETFound_CFP
+    architecture: ViT-Large
+    parameters: approximately 300 million
+    pretraining: 1.6 million retinal images reported by authors
+    role: controlled teacher or transfer-learning pilot
+    status: official gated weights on Hugging Face; access requires login and acceptance; not downloaded
+    official_model: https://huggingface.co/YukunZhou/RETFound_mae_natureCFP
+    licence: CC BY-NC 4.0
+    caution: Compare on identical frozen splits before adopting; non-commercial terms require review before any commercial deployment.
+  - name: DINOv2_small
+    architecture: ViT-S/14
+    parameters: approximately 21 million
+    role: compute-practical foundation baseline
+    status: official source and weights downloaded, pinned, checksummed, and forward-pass verified for the V3.2 frozen pilot
+    provenance: artifacts/dinov2_vits14_provenance.json
+    caution: General-purpose pretraining does not guarantee retinal or Indian-domain improvement.
+
+future_preferred_final_test:
+  name: prospective_Indian_camera_cohort
+  requirements:
+    - Ethics approval and appropriate consent or waiver.
+    - De-identification and controlled access.
+    - Intended rural camera and capture workflow.
+    - Two independent qualified graders.
+    - Senior adjudication of disagreements.
+    - Frozen test manifest before model selection.

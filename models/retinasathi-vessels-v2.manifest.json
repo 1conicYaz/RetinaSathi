@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "model_version": "v2.0.0",
+  "status": "ready_experimental",
+  "task": "vessels",
+  "dataset": "DRIVE",
+  "classes": [
+    "vessels"
+  ],
+  "input_size": 768,
+  "threshold": 0.5,
+  "preprocessing": {
+    "retinal_crop": true,
+    "aspect_ratio_safe_resize": true,
+    "enhancement": "none",
+    "color_normalization": false,
+    "resampling": "bilinear"
+  },
+  "validation": {
+    "loss": 1.1050901412963867,
+    "dice_per_class": [
+      0.680211234164
+    ],
+    "iou_per_class": [
+      0.5153940174154541
+    ],
+    "precision_per_class": [
+      0.5959125479259609
+    ],
+    "recall_per_class": [
+      0.7922897326143754
+    ],
+    "mean_dice": 0.680211234164,
+    "ground_truth_positive_pixels": [
+      179890
+    ]
+  },
+  "official_test_used": false,
+  "checkpoint_sha256": "c82a211f8ad4dc53790cc15e0530b7be9300c158a76f459cb9c8251e49b61a02",
+  "validation_sha256": "7c05bcf835024b0d934e7299af186f1d3eea15ef0db66bd06b80987fd3ffabd6",
+  "onnx_sha256": "7abc7be997791b2b1eadf12cf3ece1bd4ea43c3bbb2f7196ec195d7968975ade",
+  "checkpoint_epoch": 28
+}
