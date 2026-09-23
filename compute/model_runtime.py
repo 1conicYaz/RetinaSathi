@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import io
 import json
 import os
@@ -25,6 +26,18 @@ GRADE_LABELS = (
     "Proliferative diabetic retinopathy",
 )
 DME_LABELS = ("No apparent DME risk", "Possible DME risk", "High DME risk")
+
+
+def _sha256_bytes(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 class RetinaSathiPredictor:
@@ -54,6 +67,12 @@ class RetinaSathiPredictor:
             self.referable_threshold = float(self.manifest["referable_threshold"])
             self.status = "ready" if self.manifest.get("status") == "locked_tested" else "candidate"
             self.explainability_mode = str(self.manifest.get("explainability", {}).get("method", "unavailable"))
+        self.model_sha256 = _sha256_file(model_path)
+        self.config_sha256 = _sha256_bytes(
+            json.dumps(self.manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        )
+        self.architecture = str(self.manifest.get("architecture", "MobileNetV3"))
+        self.calibration_version = f"manifest-sha256:{self.config_sha256[:12]}"
         self.mean = np.asarray((0.485, 0.456, 0.406), dtype=np.float32)[:, None, None]
         self.std = np.asarray((0.229, 0.224, 0.225), dtype=np.float32)[:, None, None]
         metrics_path = model_path.with_suffix(".metrics.json")
@@ -79,8 +98,13 @@ class RetinaSathiPredictor:
         resized_rgb = np.asarray(image.convert("RGB").resize((256, 256)), dtype=np.float32) / 255.0
         sample = np.asarray(image.convert("L").resize((256, 256)), dtype=np.float32) / 255.0
         yy, xx = np.ogrid[:256, :256]
-        circular_field = (xx - 127.5) ** 2 + (yy - 127.5) ** 2 < 121**2
+        radius_squared = (xx - 127.5) ** 2 + (yy - 127.5) ** 2
+        circular_field = radius_squared < 121**2
+        boundary_ring = (radius_squared > 105**2) & (radius_squared < 118**2)
         foreground = (sample > 0.045) & circular_field
+        outer_ring = ~circular_field
+        dark_outer_fraction = float((sample[outer_ring] < 0.08).mean())
+        boundary_coverage = float((sample[boundary_ring] > 0.045).mean())
         retinal_pixels = sample[foreground]
         if retinal_pixels.size < 100:
             return {"score": 0.0, "label": "poor", "issues": ["Retina is not visible"], "brightness": 0.0, "contrast": 0.0, "sharpness": 0.0}
@@ -92,6 +116,10 @@ class RetinaSathiPredictor:
         vertical = np.abs(np.diff(sample, axis=0))
         horizontal = np.abs(np.diff(sample, axis=1))
         gradient = float((vertical[(foreground[1:] & foreground[:-1])].mean() + horizontal[(foreground[:, 1:] & foreground[:, :-1])].mean()) / 2)
+        # Sensor noise and checkerboards can satisfy simple brightness/contrast tests.
+        # A very high local gradient is therefore treated as unsupported input.
+        excessive_texture = gradient > 0.065
+        field_boundary_supported = dark_outer_fraction >= 0.45 and boundary_coverage >= 0.60
         exposure = max(0.0, 1.0 - abs(brightness - 0.38) / 0.32)
         score = float(0.35 * exposure + 0.25 * min(1.0, contrast / 0.08) + 0.40 * min(1.0, gradient / 0.008))
         issues: list[str] = []
@@ -103,12 +131,16 @@ class RetinaSathiPredictor:
             issues.append("Retinal contrast is low")
         if gradient < 0.0045:
             issues.append("Image may be blurred")
+        elif excessive_texture:
+            issues.append("Image contains excessive high-frequency noise or a non-retinal pattern")
         if foreground_fraction < 0.55:
             issues.append("Retinal field of view is incomplete")
+        if not field_boundary_supported:
+            issues.append("Circular retinal field boundary is not visible")
         if not resembles_fundus:
             issues.append("Image does not resemble a color fundus photograph")
         label = "good" if score >= 0.68 else "usable" if score >= 0.45 else "poor"
-        if foreground_fraction < 0.55 or not resembles_fundus:
+        if foreground_fraction < 0.55 or not field_boundary_supported or not resembles_fundus or excessive_texture:
             label = "poor"
         return {"score": round(score, 4), "label": label, "issues": issues, "brightness": round(brightness, 4), "contrast": round(contrast, 4), "sharpness": round(gradient, 4)}
 
@@ -330,10 +362,12 @@ class RetinaSathiPredictor:
         preview = self._image_data_uri(image)
         return {
             "api_version": "2.0",
+            "assessment": {"state": "retake_required", "reason": "Image quality gate stopped inference"},
             "model_version": self.version,
+            "model_identity": self.runtime_identity(),
             "dataset": self.dataset,
             "quality": {"status": "ready" if self.quality_session is not None else "heuristic", "model_version": str(self.quality_manifest.get("model_version", "deterministic-quality-v1")), **quality},
-            "dr": {"status": "unavailable", "grade": None, "label": "Not graded — image ungradeable", "probabilities": [], "confidence_raw": None, "confidence_calibrated": None, "calibration_status": "not_calibrated", "referable": False},
+            "dr": {"status": "unavailable", "grade": None, "label": "Not graded — image ungradeable", "probabilities": [], "confidence_raw": None, "confidence_calibrated": None, "calibration_status": "not_calibrated", "referable": None, "referable_score": None, "referable_threshold": self.referable_threshold, "referable_decision": None},
             "dme": {"status": "unavailable", "risk": None, "label": "Not assessed — image ungradeable", "probabilities": []},
             "structures": {"status": "unavailable", "vessels": {"status": "unavailable"}, "optic_disc": {"status": "unavailable"}, "fovea": {"status": "unavailable"}},
             "lesions": {"status": "unavailable", "experimental": True, "items": []},
@@ -343,9 +377,25 @@ class RetinaSathiPredictor:
             "runtime": {"processing_mode": os.getenv("PROCESSING_MODE", "cloud"), "device": "cpu", "latency_ms": round((time.perf_counter() - started_at) * 1000, 2)},
             "dr_grade": None, "dr_label": "Not graded — image ungradeable", "grade_probabilities": [],
             "dme_risk": None, "dme_label": "Not assessed — image ungradeable", "dme_probabilities": [],
-            "confidence": None, "referable_dr": False, "recommendation_text": recommendation,
+            "confidence": None, "referable_dr": None, "recommendation_text": recommendation,
             "explanation_image": preview, "legacy_lesions": [],
             "disclaimer": "Research screening support only. Not a medical diagnosis.",
+        }
+
+    def runtime_identity(self) -> dict[str, object]:
+        """Return the immutable identity used by health, model-card and predictions."""
+        return {
+            "model_name": "RetinaSathi DR screening candidate",
+            "model_version": self.version,
+            "architecture": getattr(self, "architecture", "unavailable"),
+            "model_sha256": getattr(self, "model_sha256", "0" * 64),
+            "config_sha256": getattr(self, "config_sha256", "0" * 64),
+            "input_size": self.image_size,
+            "referable_threshold": self.referable_threshold,
+            "calibration_version": getattr(self, "calibration_version", "unavailable"),
+            "explanation_capability": getattr(self, "explainability_mode", "unavailable"),
+            "build_commit": os.getenv("BUILD_COMMIT", "unavailable"),
+            "deployment_revision": os.getenv("CONTAINER_APP_REVISION", "unavailable"),
         }
 
     def predict(self, image: Image.Image) -> dict[str, object]:
@@ -395,7 +445,12 @@ class RetinaSathiPredictor:
         }
         result = {
             "api_version": "2.0",
+            "assessment": {
+                "state": "uncertain" if uncertain_action and not clinical_action else "assessed_referable" if referable else "assessed_non_referable",
+                "reason": "Low or uncalibrated confidence requires manual review" if uncertain_action and not clinical_action else "Dedicated referral head crossed its threshold" if referable else "Dedicated referral head remained below its threshold",
+            },
             "model_version": self.version,
+            "model_identity": self.runtime_identity(),
             "dataset": self.dataset,
             "quality": {"status": "ready" if self.quality_session is not None else "heuristic", "model_version": str(self.quality_manifest.get("model_version", "deterministic-quality-v1")), **quality},
             "dr": {
@@ -407,6 +462,9 @@ class RetinaSathiPredictor:
                 "confidence_calibrated": confidence if self.temperature is not None else None,
                 "calibration_status": "calibrated" if self.temperature is not None else "not_calibrated",
                 "referable": referable,
+                "referable_score": round(referable_score, 5),
+                "referable_threshold": self.referable_threshold,
+                "referable_decision": referable,
             },
             "dme": {
                 "status": self.status if self.dme_available else "unavailable",
@@ -422,7 +480,7 @@ class RetinaSathiPredictor:
                 "image": explanation_image,
                 "attention_regions": attention_regions,
                 "clinical_interpretation": (
-                    "Cloud V3.4 returns calibrated predictions but no attention map; use the local PyTorch runtime for the experimental gradient-based explanation."
+                    "Explanation unavailable for this model version because the prior method did not pass technical validation."
                     if heatmap is None
                     else "Model influence only; not a lesion map or anatomical confirmation."
                 ),

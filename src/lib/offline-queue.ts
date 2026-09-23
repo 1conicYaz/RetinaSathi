@@ -28,11 +28,11 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
-export async function queueScreening(userId: string, patient: PatientDetails, file: File, result: ScreeningResult): Promise<void> {
+export async function queueScreening(userId: string, patient: PatientDetails, file: File, result: ScreeningResult, operationId = crypto.randomUUID()): Promise<void> {
   const database = await openDatabase();
   await new Promise<void>((resolve, reject) => {
     const transaction = database.transaction(STORE, 'readwrite');
-    transaction.objectStore(STORE).put({ id: crypto.randomUUID(), userId, patient, file, result, createdAt: new Date().toISOString() } satisfies PendingScreening);
+    transaction.objectStore(STORE).put({ id: operationId, userId, patient, file, result, createdAt: new Date().toISOString() } satisfies PendingScreening);
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error ?? new Error('Could not queue the screening.'));
   });
@@ -81,14 +81,14 @@ async function removePending(id: string): Promise<void> {
 
 export async function syncPendingScreenings(
   userId: string,
-  save: (userId: string, patient: PatientDetails, file: File, result: ScreeningResult) => Promise<unknown>,
+  save: (userId: string, patient: PatientDetails, file: File, result: ScreeningResult, operationId: string) => Promise<unknown>,
 ): Promise<SyncResult> {
   const synchronize = async (): Promise<SyncResult> => {
     const rows = await pendingScreenings(userId);
     let synchronized = 0;
     for (const row of rows) {
       try {
-        await save(userId, row.patient, row.file, row.result);
+        await save(userId, row.patient, row.file, row.result, row.id);
         await removePending(row.id);
         synchronized += 1;
       } catch {

@@ -59,6 +59,10 @@ class V34OnnxPredictor(RetinaSathiPredictor):
         self.dme_available = False
         self.runtime_device = "cpu_onnxruntime"
         self.explainability_mode = "unavailable_in_onnx_cloud_runtime"
+        self.model_sha256 = actual_digest
+        self.config_sha256 = _sha256(manifest_path)
+        self.architecture = str(manifest.get("foundation_model", {}).get("model_name", "dinov2_vits14"))
+        self.calibration_version = f"manifest-sha256:{self.config_sha256[:12]}"
         self.temperature = float(calibration["nominal_temperature"])
         self.ordinal_temperature = float(calibration["ordinal_temperature"])
         self.nominal_temperature = float(calibration["nominal_temperature"])

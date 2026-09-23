@@ -73,6 +73,10 @@ class LocalPyTorchPredictor(RetinaSathiPredictor):
         self.explainability_mode = "autograd_gradcam"
         self.temperature = float(validation["temperature"])
         self.referable_threshold = float(validation["referable_threshold"])
+        self.model_sha256 = checkpoint_digest
+        self.config_sha256 = sha256(validation_path)
+        self.architecture = str(state["config"].get("model", {}).get("architecture", "EfficientNet-B3"))
+        self.calibration_version = f"validation-sha256:{self.config_sha256[:12]}"
         self.manifest = {
             "model_version": self.version,
             "input_size": self.image_size,

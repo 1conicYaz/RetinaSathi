@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import asyncio
 import io
 import os
+import secrets
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, UnidentifiedImageError
+from starlette.concurrency import run_in_threadpool
 
 try:
     from .model_runtime import RetinaSathiPredictor
@@ -16,7 +19,13 @@ except ImportError:  # Supports `uvicorn app:app` from the compute directory.
 
 MODEL_PATH = Path(os.getenv("MODEL_PATH", "artifacts/idrid_multitask.onnx"))
 MAX_IMAGE_BYTES = 15 * 1024 * 1024
-allowed_origins = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "*").split(",") if origin.strip()]
+MAX_IMAGE_PIXELS = int(os.getenv("MAX_IMAGE_PIXELS", "40000000"))
+MAX_IMAGE_DIMENSION = int(os.getenv("MAX_IMAGE_DIMENSION", "12000"))
+INFERENCE_TIMEOUT_SECONDS = float(os.getenv("INFERENCE_TIMEOUT_SECONDS", "45"))
+MAX_INFERENCE_CONCURRENCY = int(os.getenv("MAX_INFERENCE_CONCURRENCY", "1"))
+INFERENCE_API_KEY = os.getenv("INFERENCE_API_KEY", "").strip()
+allowed_origins = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "http://127.0.0.1:5173,http://localhost:5173").split(",") if origin.strip()]
+inference_slots = asyncio.Semaphore(max(1, MAX_INFERENCE_CONCURRENCY))
 
 app = FastAPI(title="RetinaSathi Inference API", version="0.1.0")
 app.add_middleware(
@@ -24,7 +33,7 @@ app.add_middleware(
     allow_origins=allowed_origins,
     allow_credentials="*" not in allowed_origins,
     allow_methods=["GET", "POST"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "X-Inference-Key"],
 )
 
 predictor: RetinaSathiPredictor | None = None
@@ -80,6 +89,7 @@ def health() -> dict[str, object]:
         "model_loaded": predictor is not None,
         "model_version": predictor.version if predictor else None,
         "quality_model_loaded": predictor.quality_session is not None if predictor else False,
+        "model_identity": predictor.runtime_identity() if predictor else None,
     }
 
 
@@ -100,6 +110,7 @@ def model_card() -> dict[str, object]:
     return {
         "name": "RetinaSathi diabetic-retinopathy screening candidate",
         "version": predictor.version,
+        "model_identity": predictor.runtime_identity(),
         "dataset": predictor.dataset,
         "status": predictor.status,
         "metrics": predictor.manifest.get("validation", predictor.metrics),
@@ -123,7 +134,20 @@ def model_card() -> dict[str, object]:
 
 
 @app.post("/predict")
-async def predict(file: UploadFile = File(...)) -> dict[str, object]:
+async def predict(
+    file: UploadFile = File(...),
+    x_inference_key: str | None = Header(default=None, alias="X-Inference-Key"),
+) -> dict[str, object]:
+    if INFERENCE_API_KEY and (
+        not isinstance(x_inference_key, str)
+        or not secrets.compare_digest(x_inference_key, INFERENCE_API_KEY)
+    ):
+        raise api_error(
+            401,
+            "UNAUTHORIZED",
+            "Valid inference credentials are required.",
+            "Sign in to RetinaSathi and retry through the application.",
+        )
     if predictor is None:
         raise api_error(503, "MODEL_UNAVAILABLE", "Model checkpoint is not available.", "Start the local model service or use the cloud backup.")
     if file.content_type not in {"image/jpeg", "image/png", "image/webp"}:
@@ -133,10 +157,28 @@ async def predict(file: UploadFile = File(...)) -> dict[str, object]:
         raise api_error(413, "IMAGE_TOO_LARGE", "Image exceeds the 15 MB limit.", "Export a smaller JPEG or PNG without removing retinal detail.")
     try:
         with Image.open(io.BytesIO(content)) as source:
+            width, height = source.size
+            if width > MAX_IMAGE_DIMENSION or height > MAX_IMAGE_DIMENSION or width * height > MAX_IMAGE_PIXELS:
+                raise api_error(
+                    413,
+                    "IMAGE_DIMENSIONS_TOO_LARGE",
+                    "Decoded image dimensions exceed the safe processing limit.",
+                    "Export a smaller image while preserving the full retinal field.",
+                )
             image = source.convert("RGB")
+    except HTTPException:
+        raise
     except (UnidentifiedImageError, OSError) as error:
         raise api_error(400, "CORRUPT_IMAGE", "The uploaded file is not a readable image.", "Open the source image locally, then recapture or export it again.") from error
     try:
-        return predictor.predict(image)
+        async with inference_slots:
+            return await asyncio.wait_for(
+                run_in_threadpool(predictor.predict, image),
+                timeout=INFERENCE_TIMEOUT_SECONDS,
+            )
+    except asyncio.TimeoutError as error:
+        raise api_error(504, "INFERENCE_TIMEOUT", "The model did not finish within the request limit.", "Retry once after the service is warm.") from error
+    except HTTPException:
+        raise
     except Exception as error:
         raise api_error(500, "INFERENCE_FAILED", "The model could not complete this screening.", "Retry once, then switch runtime or contact the technical operator.") from error

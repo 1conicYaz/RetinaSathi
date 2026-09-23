@@ -18,7 +18,10 @@ class QualityGateTests(unittest.TestCase):
     def fundus_like(size: int = 512) -> Image.Image:
         rng = np.random.default_rng(26038)
         texture = np.clip(rng.normal(95, 25, (size, size)), 0, 255).astype(np.uint8)
-        return Image.fromarray(np.stack([np.clip(texture * 1.4, 0, 255), texture, texture // 2], axis=-1).astype(np.uint8))
+        pixels = np.stack([np.clip(texture * 1.4, 0, 255), texture, texture // 2], axis=-1).astype(np.uint8)
+        yy, xx = np.ogrid[:size, :size]
+        pixels[(xx - (size - 1) / 2) ** 2 + (yy - (size - 1) / 2) ** 2 > (size * 0.47) ** 2] = 0
+        return Image.fromarray(pixels)
 
     def test_black_frame_is_rejected(self) -> None:
         image = Image.new("RGB", (512, 512), "black")
@@ -27,10 +30,7 @@ class QualityGateTests(unittest.TestCase):
         self.assertIn("Retina is not visible", result["issues"])
 
     def test_textured_fundus_like_frame_is_usable(self) -> None:
-        rng = np.random.default_rng(26038)
-        base = np.full((512, 512), 98, dtype=np.float32)
-        textured = np.clip(base + rng.normal(0, 24, base.shape), 0, 255).astype(np.uint8)
-        image = Image.fromarray(np.stack([np.clip(textured * 1.35, 0, 255), textured, np.clip(textured * 0.7, 0, 255)], axis=-1).astype(np.uint8))
+        image = self.fundus_like()
         result = RetinaSathiPredictor.quality(image)
         self.assertIn(result["label"], {"good", "usable"})
 
@@ -41,6 +41,14 @@ class QualityGateTests(unittest.TestCase):
         result = RetinaSathiPredictor.quality(image)
         self.assertEqual(result["label"], "poor")
         self.assertIn("Image does not resemble a color fundus photograph", result["issues"])
+
+    def test_high_frequency_red_noise_is_rejected(self) -> None:
+        rng = np.random.default_rng(99)
+        noise = rng.integers(0, 256, (512, 512), dtype=np.uint8)
+        image = Image.fromarray(np.stack([noise, noise // 2, noise // 4], axis=-1))
+        result = RetinaSathiPredictor.quality(image)
+        self.assertEqual(result["label"], "poor")
+        self.assertIn("Image contains excessive high-frequency noise or a non-retinal pattern", result["issues"])
 
     def test_incomplete_field_of_view_is_rejected(self) -> None:
         image = np.zeros((512, 512, 3), dtype=np.uint8)
@@ -76,13 +84,12 @@ class ModelContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         checkpoint = Path(__file__).resolve().parents[1] / "artifacts" / "idrid_multitask.onnx"
+        if not checkpoint.exists():
+            raise unittest.SkipTest("Baseline ONNX artifact is not present")
         cls.predictor = RetinaSathiPredictor(checkpoint)
 
     def test_prediction_contract(self) -> None:
-        rng = np.random.default_rng(26038)
-        texture = np.clip(rng.normal(95, 28, (300, 300)), 0, 255).astype(np.uint8)
-        pixels = np.stack([np.clip(texture * 1.4, 0, 255), texture, np.clip(texture * 0.65, 0, 255)], axis=-1).astype(np.uint8)
-        result = self.predictor.predict(Image.fromarray(pixels))
+        result = self.predictor.predict(QualityGateTests.fundus_like(512))
         self.assertIn(result["dr_grade"], range(5))
         self.assertIn(result["dme_risk"], range(3))
         self.assertEqual(len(result["grade_probabilities"]), 5)
@@ -105,6 +112,9 @@ class ModelContractTests(unittest.TestCase):
         self.assertIsNone(result["dr_grade"])
         self.assertIsNone(result["dme_risk"])
         self.assertIsNone(result["confidence"])
+        self.assertIsNone(result["referable_dr"])
+        self.assertIsNone(result["dr"]["referable_decision"])
+        self.assertEqual(result["assessment"]["state"], "retake_required")
         self.assertEqual(result["explainability"]["method"], "not_run_quality_gate")
 
     def test_ordinal_logits_convert_to_five_probabilities(self) -> None:
@@ -222,6 +232,10 @@ class ModelContractTests(unittest.TestCase):
         result = predictor.predict(QualityGateTests.fundus_like(128))
         self.assertEqual(result["dr_grade"], 0)
         self.assertTrue(result["referable_dr"])
+        self.assertEqual(result["dr"]["referable_score"], 0.91)
+        self.assertEqual(result["dr"]["referable_threshold"], 0.5)
+        self.assertTrue(result["dr"]["referable_decision"])
+        self.assertEqual(result["assessment"]["state"], "assessed_referable")
         self.assertEqual(result["recommendation"]["urgency"], "refer")
 
 

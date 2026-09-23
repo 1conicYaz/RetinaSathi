@@ -81,12 +81,13 @@ export function ScreeningForm() {
         age: age ? Number(age) : null,
         sex,
       };
+      const operationId = crypto.randomUUID();
       try {
-        await saveScreening(viewer.id, patient, file, prediction);
+        await saveScreening(viewer.id, patient, file, prediction, operationId);
         setSaved(true);
       } catch (saveError) {
         if (!(saveError instanceof ScreeningError) || saveError.code !== 'STORAGE_FAILED') throw saveError;
-        await queueScreening(viewer.id, patient, file, prediction);
+        await queueScreening(viewer.id, patient, file, prediction, operationId);
         setPendingCount((count) => count + 1);
         setSyncMessage('SYNC PENDING: saved only in this browser. Keep this device secure and reconnect to upload it.');
       }
@@ -98,7 +99,7 @@ export function ScreeningForm() {
   }
 
   const busy = stage !== 'idle';
-  const stageLabel = stage === 'quality' ? 'Checking image quality…' : stage === 'grading' ? 'Grading diabetic retinopathy…' : stage === 'explaining' ? 'Building visual explanation…' : 'Saving securely to InsForge…';
+  const stageLabel = stage === 'quality' ? 'Checking image quality…' : stage === 'grading' ? 'Running V3.4 screening…' : stage === 'explaining' ? 'Checking available result evidence…' : 'Saving securely to InsForge…';
 
   return (
     <div className="screening-layout">
@@ -128,7 +129,7 @@ export function ScreeningForm() {
         <p className="consent-copy">By continuing, you confirm that appropriate consent was obtained for this research screening.</p>
       </form>
 
-      {result && preview ? <ResultPanel result={result} originalUrl={preview} patient={{ code: patientCode.trim(), age: age ? Number(age) : null, sex }}/> : <aside className="workflow-panel"><p className="eyebrow">What happens next</p><h2>One image. Four safeguards.</h2><ol><li><span>01</span><div><strong>Quality gate</strong><p>Flags blur, poor exposure, and low contrast before interpretation.</p></div></li><li><span>02</span><div><strong>DR grading</strong><p>Predicts severity from grade 0 to 4 using the active research model.</p></div></li><li><span>03</span><div><strong>DME status</strong><p>Shows a DME estimate only when the active model has a validated DME head.</p></div></li><li><span>04</span><div><strong>Visual evidence</strong><p>Shows the regions that influenced the model without calling them confirmed lesions.</p></div></li></ol></aside>}
+        {result && preview ? <ResultPanel result={result} originalUrl={preview} patient={{ code: patientCode.trim(), age: age ? Number(age) : null, sex }}/> : <aside className="workflow-panel"><p className="eyebrow">What happens next</p><h2>One image. Four safeguards.</h2><ol><li><span>01</span><div><strong>Quality gate</strong><p>Flags blur, poor exposure, and low contrast before interpretation.</p></div></li><li><span>02</span><div><strong>DR screening</strong><p>Returns a dedicated referral decision and supporting grade estimate from the active research model.</p></div></li><li><span>03</span><div><strong>DME status</strong><p>Shows a DME estimate only when the active model has a validated DME head.</p></div></li><li><span>04</span><div><strong>Evidence status</strong><p>Shows visual evidence only when it has passed the model version's validation checks.</p></div></li></ol></aside>}
     </div>
   );
 }
