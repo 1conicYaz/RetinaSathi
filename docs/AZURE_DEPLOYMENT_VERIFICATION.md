@@ -44,7 +44,7 @@ flowchart LR
 | Direct anonymous prediction blocked | Pass | A valid public retinal fixture submitted without a key returned HTTP 401 with structured `UNAUTHORIZED` error |
 | Private retinal storage | Pass | Live bucket is private; owner policies exist in migrations; fresh storage-policy SQL should be retained with release evidence |
 | Owner-scoped screening rows | Pass | Live `screenings`, `screening_reviews` and `screening_lesions` policies were listed and are owner scoped |
-| Secret values excluded from Git | Pass subject to final secret scan | `.env*` and `.insforge/project.json` are ignored |
+| Secret values excluded from the current tracked tree | Pass | Placeholder environment values are tracked; local `.env*` and `.insforge/project.json` are ignored |
 | Rate limiting | Partial | Azure allows one replica and the app limits inference concurrency; no per-user quota is implemented |
 | Request bounds | Release fix | 15 MiB encoded limit plus decoded pixel/dimension limits and timeout |
 | Error leakage | Pass in inspected paths | Proxy returns structured generic errors; no upstream secrets are returned |

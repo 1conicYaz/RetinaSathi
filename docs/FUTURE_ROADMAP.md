@@ -44,5 +44,5 @@ Planning estimates below are priorities, not promises.
 ## Three highest priorities after SIH
 
 1. **Independent Indian intended-camera clinical evaluation** because the current source holdout cannot establish real-world safety or generalization.
-2. **Robust quality/OOD and governed human-review workflow** because unsafe inputs and unclear reviewer responsibility can harm users even when the classifier is accurate.
+2. **Tested quality/OOD and governed human-review workflow** because unsafe inputs and unclear reviewer responsibility can harm users even when the classifier is accurate.
 3. **Validated explainability and pathology evidence** because an attractive map is not useful unless it is technically sound and clinically interpretable.

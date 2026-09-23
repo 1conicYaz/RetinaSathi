@@ -4,7 +4,7 @@ Date: 21 September 2026
 
 ## Decision
 
-Freeze the V3.4 architecture and training recipe as the current RetinaSathi candidate. All three independently initialized runs passed the predeclared calibration gate and the DeepDRiD source gate. The referral-screening metrics are stable enough to stop changing this model before the locked test.
+Freeze the V3.4 architecture and training recipe as the current RetinaSathi candidate. All three fine-tuning seeds from the same V3.2 initialization passed the predeclared calibration gate and the DeepDRiD source gate. The referral-screening metrics are stable enough to stop changing this model before the locked test.
 
 Do not describe the five-grade classifier as clinically solved. Grade 2 and Grade 3 vary meaningfully between seeds, and Grade 4 recall remains low. The model is strongest as a referable-DR screening candidate that requires human review.
 

@@ -108,7 +108,7 @@ Every answer separates evidence available now from planned work.
 **CURRENT:** In cloud mode, the retinal image is sent through InsForge to Azure and stored in the protected workspace after analysis. **FUTURE:** Offer a validated edge mode with explicit data policy.
 
 ## 36. What are the next three milestones?
-**CURRENT:** Prototype stabilization is complete enough for a controlled demo. **FUTURE:** Independent intended-camera evaluation; robust quality/OOD and reviewer governance; validated explanation/pathology research.
+**CURRENT:** Prototype stabilization is complete enough for a controlled demo. **FUTURE:** Independent intended-camera evaluation; tested quality/OOD and reviewer governance; validated explanation/pathology research.
 
 ## 37. How will you clinically validate it?
 **CURRENT:** No clinical validation claim. **FUTURE:** Freeze model/threshold, obtain approvals, use patient-level reference grading, report confidence intervals, calibration, subgroups and false negatives.

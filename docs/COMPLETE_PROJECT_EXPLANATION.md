@@ -247,7 +247,7 @@ Use this short answer:
 ## 17. Best next steps after SIH
 
 1. **Independent intended-camera validation:** freeze model and threshold, collect an ethically governed patient-level cohort, obtain qualified reference grades and analyze false negatives, calibration and subgroups.
-2. **Robust quality/OOD and review workflow:** develop and validate retinal/non-retinal detection, camera-quality checks, clinician roles, overrides and audit logs.
+2. **Tested quality/OOD and review workflow:** develop and validate retinal/non-retinal detection, camera-quality checks, clinician roles, overrides and audit logs.
 3. **Validated explanation and pathology research:** build transformer attribution and lesion models only with technical sanity tests and ophthalmologist usefulness evaluation.
 
 Optimization such as distillation, quantization and pruning should come after safety and scientific validity are established.
@@ -259,8 +259,8 @@ Optimization such as distillation, quantization and pruning should come after sa
 ## 19. Evidence and further reading
 
 - `README.md` — current project and reproduction entry point
-- `docs/SIH_CLAIM_REGISTER.md` — safe and unsafe claims
-- `docs/AUDIT_REMEDIATION_MATRIX.md` — audit finding to fix/test mapping
+- `docs/SIH_JUDGE_QA.md` — concise answers with current evidence separated from future work
+- `docs/FUTURE_ROADMAP.md` — staged research, validation and deployment priorities
 - `docs/V3_4_RESULTS.md` — model results
 - `docs/V3_DATA_CARD.md` — data provenance and limitations
 - `docs/V3_4_MATLAB_PARITY_REPORT.md` — MATLAB evidence

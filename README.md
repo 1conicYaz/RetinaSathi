@@ -142,7 +142,6 @@ throughput.
 ## Evidence index
 
 - [Complete project explanation](docs/COMPLETE_PROJECT_EXPLANATION.md)
-- [Final SIH remediation report](docs/SIH_FINAL_REMEDIATION_REPORT.md)
 - [Demo runbook](DEMO.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Model selection rationale](docs/MODEL_SELECTION_AND_APPROACH_REPORT.md)
@@ -153,6 +152,7 @@ throughput.
 - [SimEvents results](docs/SIMULATION_RESULTS.md)
 - [SIH, MATLAB and Simulink audit](docs/SIH_MATLAB_SIMULINK_FULL_AUDIT.md)
 - [Clinical pilot plan](docs/V3_4_CLINICAL_PILOT_AND_APP_INTEGRATION.md)
+- [Future roadmap](docs/FUTURE_ROADMAP.md)
 
 ## Current limitations
 

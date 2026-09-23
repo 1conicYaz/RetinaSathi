@@ -1,6 +1,6 @@
-# RetinaSathi official six-slide content
+# RetinaSathi suggested six-slide deck
 
-Keep the deck to six slides including the title. Use screenshots from the verified release and cite the claim register.
+Keep the deck to six slides including the title. Use screenshots from the verified release and cite the measured-result documents linked from `README.md`.
 
 ## Slide 1 — Problem and vision
 
