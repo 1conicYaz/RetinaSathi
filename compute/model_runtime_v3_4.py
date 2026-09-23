@@ -51,12 +51,18 @@ class V34LocalPredictor(RetinaSathiPredictor):
         self.status = "candidate"
         self.dme_available = False
         self.runtime_device = str(self.device)
-        self.explainability_mode = "gradient_x_activation_patch_map"
+        # The previous patch-token map was constant on audit probes. Keep V3.4
+        # explanations disabled until a target- and input-sensitive method passes validation.
+        self.explainability_mode = "disabled_not_technically_verified"
         self.temperature = float(validation["nominal_temperature"])
         self.ordinal_temperature = float(validation["ordinal_temperature"])
         self.nominal_temperature = float(validation["nominal_temperature"])
         self.binary_temperature = float(validation["binary_temperature"])
         self.referable_threshold = float(validation["threshold_gate"]["selected"]["threshold"])
+        self.model_sha256 = checkpoint_digest
+        self.config_sha256 = sha256(validation_path)
+        self.architecture = "dinov2_vits14"
+        self.calibration_version = f"validation-sha256:{self.config_sha256[:12]}"
         self.manifest = {
             "model_version": self.version,
             "input_size": self.image_size,
@@ -68,7 +74,6 @@ class V34LocalPredictor(RetinaSathiPredictor):
             "official_test_used": False,
         }
         self.metrics = validation["source_validation"]
-        self.latest_patch_heatmap: np.ndarray | None = None
         self.mean = np.asarray((0.485, 0.456, 0.406), dtype=np.float32)[:, None, None]
         self.std = np.asarray((0.229, 0.224, 0.225), dtype=np.float32)[:, None, None]
         self._load_quality_model()
@@ -76,15 +81,7 @@ class V34LocalPredictor(RetinaSathiPredictor):
 
     def _prediction_signals(self, tensor: np.ndarray) -> dict[str, object]:
         image = torch.from_numpy(tensor).to(self.device)
-        captured: dict[str, torch.Tensor] = {}
-
-        def capture_tokens(_module, _inputs, output) -> None:
-            captured["tokens"] = output
-            output.retain_grad()
-
-        hook = self.model.backbone.norm.register_forward_hook(capture_tokens)
-        try:
-            self.model.zero_grad(set_to_none=True)
+        with torch.inference_mode():
             binary_logits, ordinal_logits, nominal_logits = self.model(image)
             raw_ordinal = ordinal_probabilities(ordinal_logits, 1.0)
             raw_nominal = torch.softmax(nominal_logits, dim=1)
@@ -93,46 +90,12 @@ class V34LocalPredictor(RetinaSathiPredictor):
             calibrated_nominal = torch.softmax(nominal_logits / self.nominal_temperature, dim=1)
             calibrated_grade = 0.5 * calibrated_ordinal + 0.5 * calibrated_nominal
             referable_score = torch.sigmoid(binary_logits / self.binary_temperature)
-            grade = int(calibrated_grade[0].argmax())
-            calibrated_grade[0, grade].backward()
-        finally:
-            hook.remove()
-
-        tokens = captured.get("tokens")
-        if tokens is None or tokens.grad is None or tokens.ndim != 3:
-            raise RuntimeError("DINOv2 patch tokens were not available for explanation")
-        register_tokens = int(getattr(self.model.backbone, "num_register_tokens", 0))
-        patch_tokens = tokens[:, 1 + register_tokens :, :]
-        patch_gradients = tokens.grad[:, 1 + register_tokens :, :]
-        side = self.image_size // self.model.patch_size
-        if patch_tokens.shape[1] != side * side:
-            raise RuntimeError("DINOv2 patch-token shape does not match the configured image size")
-        influence = torch.relu((patch_tokens * patch_gradients).sum(dim=-1)).reshape(1, 1, side, side)
-        minimum = influence.amin(dim=(-2, -1), keepdim=True)
-        maximum = influence.amax(dim=(-2, -1), keepdim=True)
-        influence = (influence - minimum) / (maximum - minimum).clamp_min(1e-8)
 
         return {
             "raw_grade_probabilities": raw_grade[0].detach().cpu().numpy(),
             "grade_probabilities": calibrated_grade[0].detach().cpu().numpy(),
             "dme_probabilities": np.asarray([], dtype=np.float32),
             "referable_score": float(referable_score[0].detach().cpu()),
-            "feature_map": influence.detach().cpu().numpy(),
+            "feature_map": None,
             "explanation_logits": calibrated_grade[0].detach().cpu().numpy(),
         }
-
-    def _explanation_heatmap(
-        self,
-        feature_map: np.ndarray,
-        _grade_logits: np.ndarray,
-        _grade: int,
-        image_size: tuple[int, int],
-    ) -> tuple[np.ndarray, str, str]:
-        raw = feature_map[0, 0]
-        from PIL import Image
-
-        resized = np.asarray(
-            Image.fromarray((raw * 255).astype(np.uint8)).resize(image_size, Image.Resampling.BILINEAR),
-            dtype=np.float32,
-        ) / 255.0
-        return resized, "gradient_x_activation_patch_map", "candidate"

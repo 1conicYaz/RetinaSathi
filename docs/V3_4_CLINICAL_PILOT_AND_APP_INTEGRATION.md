@@ -105,7 +105,7 @@ The runtime refuses to load if the checkpoint hash and validation report do not 
 ### Stage 0 — teammate and engineering test
 
 - Use public, licensed, de-identified fundus images.
-- Verify upload, quality rejection, grade probabilities, referable decision, heatmap, PDF, history, and deletion.
+- Verify upload, quality rejection, grade probabilities, referable decision, explicit explanation-unavailable state, PDF, history, and deletion.
 - Build a fixed regression set containing good, blurred, dark, overexposed, cropped, and non-fundus images.
 - Record the app version, checkpoint hash, device, latency, and result for every case.
 

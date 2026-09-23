@@ -12,8 +12,8 @@ SimEvents model for clinic and district capacity planning.
 
 The selected V3.4 candidate uses a partially adapted DINOv2-S/14 encoder with
 three outputs: referable DR, ordinal Grade 0–4, and direct five-class grading.
-Three independently initialized runs produced the following source-validation
-results on the reserved DeepDRiD partition:
+Three seeded fine-tuning runs from the same V3.2 initialization produced the
+following source-validation results on the reserved DeepDRiD partition:
 
 | Metric | Three-seed mean | Range |
 |---|---:|---:|
@@ -141,6 +141,8 @@ throughput.
 
 ## Evidence index
 
+- [Complete project explanation](docs/COMPLETE_PROJECT_EXPLANATION.md)
+- [Demo runbook](DEMO.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Model selection rationale](docs/MODEL_SELECTION_AND_APPROACH_REPORT.md)
 - [V3.4 results](docs/V3_4_RESULTS.md)
@@ -150,6 +152,7 @@ throughput.
 - [SimEvents results](docs/SIMULATION_RESULTS.md)
 - [SIH, MATLAB and Simulink audit](docs/SIH_MATLAB_SIMULINK_FULL_AUDIT.md)
 - [Clinical pilot plan](docs/V3_4_CLINICAL_PILOT_AND_APP_INTEGRATION.md)
+- [Future roadmap](docs/FUTURE_ROADMAP.md)
 
 ## Current limitations
 
@@ -159,6 +162,27 @@ ophthalmologist reference grades. It also requires subgroup analysis,
 deployment load testing, clinician-rated report usability, and validated
 lesion/DME/neovascularization modules if those outputs are added.
 
-The public web deployment may use an earlier lightweight model because the
-84 MB V3.4 ONNX artifact exceeds the original low-memory compute target. The
-interface always displays the active model generation and module status.
+The current web application routes authenticated screening requests through an
+InsForge server function to a protected Azure Container Apps deployment of the
+84.27 MiB V3.4 ONNX model. Azure is configured with zero minimum and one maximum
+replica, so the first request after idle time can be slower. Runtime identity is
+returned with every prediction and must agree with the model card before a demo.
+
+## Deployment
+
+```text
+Browser → InsForge Auth → authenticated server function
+        → Azure Container Apps → V3.4 ONNX Runtime
+```
+
+- Website: <https://69exmaqk.insforge.site/>
+- Model: `classifier-v3.4-seed26038`
+- Architecture: partial DINOv2 ViT-S/14
+- Input: 392 × 392 RGB after crop, square padding and Ben Graham enhancement
+- Referral threshold: `0.2073261738`
+- Explainability: disabled for V3.4 until a technically and clinically validated method exists
+- DME, lesion, vessel, optic-disc and fovea outputs: unavailable in the deployed V3.4 path
+
+The live site and cloud state can change independently of this repository. Use
+`docs/AZURE_DEPLOYMENT_VERIFICATION.md` and the `/health` and `/model-card`
+responses to verify the active release before presenting it.

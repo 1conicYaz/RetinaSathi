@@ -1,4 +1,6 @@
 import { getInsforgeClient } from './insforge';
+import { ZodError } from 'zod';
+import { persistedStatus, screeningResultSchema, type AssessmentState } from './screening-contract';
 
 export type PatientSex = 'female' | 'male' | 'other' | 'unknown';
 
@@ -15,7 +17,21 @@ export type AttentionRegion = {
 
 export type ScreeningResult = {
   api_version: '2.0';
+  assessment: { state: AssessmentState; reason: string };
   model_version: string;
+  model_identity: {
+    model_name: string;
+    model_version: string;
+    architecture: string;
+    model_sha256: string;
+    config_sha256: string;
+    input_size: number;
+    referable_threshold: number;
+    calibration_version: string;
+    explanation_capability: string;
+    build_commit: string;
+    deployment_revision: string;
+  };
   dataset: string;
   quality: {
     status: ModuleStatus;
@@ -37,7 +53,10 @@ export type ScreeningResult = {
     confidence_raw: number | null;
     confidence_calibrated: number | null;
     calibration_status: 'calibrated' | 'not_calibrated';
-    referable: boolean;
+    referable: boolean | null;
+    referable_score: number | null;
+    referable_threshold: number;
+    referable_decision: boolean | null;
   };
   dme: { status: ModuleStatus; risk: number | null; label: string; probabilities: number[] };
   structures: {
@@ -77,7 +96,7 @@ export type ScreeningResult = {
   dme_label: string;
   dme_probabilities: number[];
   confidence: number | null;
-  referable_dr: boolean;
+  referable_dr: boolean | null;
   recommendation_text: string;
   explanation_image: string;
   legacy_lesions: [];
@@ -108,12 +127,22 @@ export type ScreeningRecord = {
   review_status: 'pending' | 'reviewed' | 'overridden' | 'inconclusive';
   reviewed_at: string | null;
   processing_mode: 'local' | 'cloud' | 'auto';
+  assessment_state: AssessmentState;
+  referral_score: number | null;
+  referral_threshold: number | null;
+  referral_decision: boolean | null;
+  model_sha256: string | null;
+  config_sha256: string | null;
+  calibration_version: string | null;
+  explanation_status: string | null;
+  operation_id: string | null;
+  result_snapshot: Record<string, unknown> | null;
   created_at: string;
 };
 
 export type ReviewDecision = 'reviewed' | 'overridden' | 'inconclusive';
 
-type LegacyScreeningPayload = Omit<ScreeningResult, 'api_version' | 'dr' | 'dme' | 'structures' | 'lesions' | 'explainability' | 'recommendation' | 'uncertainty' | 'runtime' | 'quality' | 'legacy_lesions'> & {
+type LegacyScreeningPayload = Omit<ScreeningResult, 'api_version' | 'assessment' | 'model_identity' | 'dr' | 'dme' | 'structures' | 'lesions' | 'explainability' | 'recommendation' | 'uncertainty' | 'runtime' | 'quality' | 'legacy_lesions'> & {
   quality: Omit<ScreeningResult['quality'], 'status' | 'model_version'>;
   recommendation: string;
   lesions?: Array<{ probability: number; center_x: number; center_y: number; radius: number; evidence: string }>;
@@ -138,21 +167,29 @@ export class ScreeningError extends Error {
   }
 }
 
-function inferenceCandidates(): { mode: 'local' | 'cloud'; url: string }[] {
+type InferenceCandidate =
+  | { mode: 'local'; url: string }
+  | { mode: 'cloud'; functionSlug: string };
+
+function inferenceCandidates(): InferenceCandidate[] {
   const selected = (import.meta.env.VITE_INFERENCE_MODE?.trim() || 'auto') as 'local' | 'cloud' | 'auto';
   const local = (import.meta.env.VITE_LOCAL_INFERENCE_URL?.trim() || 'http://127.0.0.1:8000').replace(/\/$/, '');
-  const cloud = import.meta.env.VITE_INFERENCE_URL?.trim()?.replace(/\/$/, '');
+  const cloudFunction = import.meta.env.VITE_INFERENCE_FUNCTION?.trim() || 'retinasathi-inference';
   if (selected === 'local') return [{ mode: 'local', url: local }];
-  if (selected === 'cloud') {
-    if (!cloud) throw new ScreeningError('MODEL_UNAVAILABLE', 'The cloud inference service is not configured.', 'Ask the technical operator to configure VITE_INFERENCE_URL.');
-    return [{ mode: 'cloud', url: cloud }];
-  }
-  return [{ mode: 'local', url: local }, ...(cloud ? [{ mode: 'cloud' as const, url: cloud }] : [])];
+  if (selected === 'cloud') return [{ mode: 'cloud', functionSlug: cloudFunction }];
+  return [{ mode: 'local', url: local }, { mode: 'cloud', functionSlug: cloudFunction }];
 }
 
 export function normalizeScreeningResult(payload: ScreeningResult | LegacyScreeningPayload, mode: 'local' | 'cloud'): ScreeningResult {
   if ('api_version' in payload && payload.api_version === '2.0') {
-    return { ...payload, runtime: { ...payload.runtime, processing_mode: mode } };
+    try {
+      return screeningResultSchema.parse({ ...payload, runtime: { ...payload.runtime, processing_mode: mode } }) as ScreeningResult;
+    } catch (error) {
+      if (error instanceof ZodError) {
+        throw new ScreeningError('INVALID_MODEL_RESPONSE', 'The model returned an incompatible result contract.', 'Do not use this result; contact the technical operator.');
+      }
+      throw error;
+    }
   }
   const legacy = payload as LegacyScreeningPayload;
   const attentionRegions: AttentionRegion[] = (legacy.lesions ?? []).map((region) => ({
@@ -162,8 +199,18 @@ export function normalizeScreeningResult(payload: ScreeningResult | LegacyScreen
   return {
     ...legacy,
     api_version: '2.0',
+    assessment: {
+      state: legacy.quality.label === 'poor' ? 'retake_required' : legacy.referable_dr ? 'assessed_referable' : 'uncertain',
+      reason: legacy.quality.label === 'poor' ? 'Image quality gate stopped inference' : 'Legacy V1 result requires manual review',
+    },
+    model_identity: {
+      model_name: 'RetinaSathi legacy baseline', model_version: legacy.model_version,
+      architecture: 'MobileNetV3', model_sha256: '0'.repeat(64), config_sha256: '0'.repeat(64),
+      input_size: 224, referable_threshold: 0.5, calibration_version: 'unavailable',
+      explanation_capability: 'baseline_feature_activation', build_commit: 'unavailable', deployment_revision: 'unavailable',
+    },
     quality: { status: 'heuristic', model_version: 'deterministic-quality-v1', ...legacy.quality },
-    dr: { status: 'baseline_v1', grade: legacy.dr_grade, label: legacy.dr_label, probabilities: legacy.grade_probabilities, confidence_raw: legacy.confidence, confidence_calibrated: null, calibration_status: 'not_calibrated', referable: legacy.referable_dr },
+    dr: { status: 'baseline_v1', grade: legacy.dr_grade, label: legacy.dr_label, probabilities: legacy.grade_probabilities, confidence_raw: legacy.confidence, confidence_calibrated: null, calibration_status: 'not_calibrated', referable: legacy.quality.label === 'poor' ? null : legacy.referable_dr, referable_score: null, referable_threshold: 0.5, referable_decision: legacy.quality.label === 'poor' ? null : legacy.referable_dr },
     dme: { status: 'baseline_v1', risk: legacy.dme_risk, label: legacy.dme_label, probabilities: legacy.dme_probabilities },
     structures: { status: 'not_trained', vessels: { status: 'not_trained' }, optic_disc: { status: 'not_trained' }, fovea: { status: 'not_trained' } },
     lesions: { status: 'not_trained', experimental: true, items: [] },
@@ -180,6 +227,7 @@ export function normalizeScreeningResult(payload: ScreeningResult | LegacyScreen
     },
     uncertainty: { label: 'unavailable', requires_manual_review: true, reason: 'V1 confidence is not calibrated' },
     runtime: { processing_mode: mode, device: 'cloud_cpu_unknown', latency_ms: 0 },
+    referable_dr: legacy.quality.label === 'poor' ? null : legacy.referable_dr,
     recommendation_text: legacy.recommendation,
     legacy_lesions: [],
   };
@@ -194,33 +242,49 @@ export async function analyzeRetina(file: File): Promise<ScreeningResult> {
       const form = new FormData();
       form.append('file', file);
       try {
+        if (candidate.mode === 'cloud') {
+          const { data, error } = await getInsforgeClient().functions.invoke<ScreeningResult | LegacyScreeningPayload>(
+            candidate.functionSlug,
+            { body: form },
+          );
+          if (error || !data) {
+            const functionError = error as (typeof error & {
+              statusCode?: number;
+              error?: string;
+              next_action?: string;
+            }) | null;
+            const status = functionError?.statusCode ?? 500;
+            const mapped = new ScreeningError(
+              functionError?.error ?? 'INFERENCE_FAILED',
+              functionError?.message ?? 'The cloud screening service could not analyze this image.',
+              functionError?.next_action ?? 'Retry or contact the technical operator.',
+            );
+            if ([502, 503, 504].includes(status) && attempt + 1 < attempts) {
+              lastError = mapped;
+              await new Promise((resolve) => window.setTimeout(resolve, 1200 * (attempt + 1)));
+              continue;
+            }
+            throw mapped;
+          }
+          return normalizeScreeningResult(data, candidate.mode);
+        }
         const response = await fetch(`${candidate.url}/predict`, { method: 'POST', body: form });
         if (!response.ok) {
           const payload = (await response.json().catch(() => null)) as { detail?: string | ApiErrorDetail } | null;
           const detail = typeof payload?.detail === 'object' ? payload.detail : null;
           const message = detail?.message ?? (typeof payload?.detail === 'string' ? payload.detail : 'The screening service could not analyze this image.');
           const error = new ScreeningError(detail?.code ?? 'INFERENCE_FAILED', message, detail?.next_action ?? 'Retry or contact the technical operator.');
-          if (candidate.mode === 'cloud' && [502, 503, 504].includes(response.status) && attempt + 1 < attempts) {
-            lastError = error;
-            await new Promise((resolve) => window.setTimeout(resolve, 1200 * (attempt + 1)));
-            continue;
-          }
-          if (response.status !== 503 || candidate.mode === 'cloud') throw error;
+          if (response.status !== 503) throw error;
           lastError = error;
           break;
         }
         const result = (await response.json()) as ScreeningResult | LegacyScreeningPayload;
         return normalizeScreeningResult(result, candidate.mode);
       } catch (caught) {
-        if (!(caught instanceof ScreeningError) && candidate.mode === 'cloud' && attempt + 1 < attempts) {
-          await new Promise((resolve) => window.setTimeout(resolve, 1200 * (attempt + 1)));
-          continue;
-        }
-        if (caught instanceof ScreeningError && candidate.mode === 'cloud') throw caught;
         lastError = caught instanceof ScreeningError ? caught : new ScreeningError(
-          candidate.mode === 'local' ? 'LOCAL_MODEL_UNAVAILABLE' : 'NETWORK_UNAVAILABLE',
-          candidate.mode === 'local' ? 'The local model service is unavailable.' : 'The cloud model service cannot be reached after three attempts.',
-          candidate.mode === 'local' ? 'Start the local demo service; automatic mode will try cloud next.' : 'Check connectivity or retry in local mode.',
+          'LOCAL_MODEL_UNAVAILABLE',
+          'The local model service is unavailable.',
+          'Start the local demo service; automatic mode will try cloud next.',
         );
         break;
       }
@@ -234,16 +298,25 @@ export async function saveScreening(
   patient: PatientDetails,
   file: File,
   result: ScreeningResult,
+  operationId: string = crypto.randomUUID(),
 ): Promise<ScreeningRecord> {
   const insforge = getInsforgeClient();
+  const { data: existingRows, error: lookupError } = await insforge.database
+    .from('screenings')
+    .select(SCREENING_COLUMNS)
+    .eq('operation_id', operationId)
+    .limit(1);
+  if (lookupError) throw new ScreeningError('STORAGE_FAILED', lookupError.message ?? 'Could not reconcile this screening.', 'Keep the queued copy and retry when connectivity is stable.');
+  const existing = (existingRows as ScreeningRecord[] | null)?.[0];
+  if (existing) return existing;
   const extension = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
-  const imageKey = `${userId}/${crypto.randomUUID()}.${extension}`;
+  const imageKey = `${userId}/${operationId}.${extension}`;
   const { data: image, error: uploadError } = await insforge.storage
     .from('retinal-screenings')
     .upload(imageKey, file);
   if (uploadError || !image) throw new ScreeningError('STORAGE_FAILED', uploadError?.message ?? 'Could not securely upload the image.', 'The screening can remain in the local sync queue until connectivity returns.');
 
-  const status = result.quality.label === 'poor' ? 'needs_retake' : 'completed';
+  const status = persistedStatus(result.assessment.state);
   const uncertainty = result.uncertainty.label;
   const processingMode = ['local', 'cloud', 'auto'].includes(result.runtime.processing_mode)
     ? result.runtime.processing_mode as 'local' | 'cloud' | 'auto'
@@ -275,6 +348,16 @@ export async function saveScreening(
         segmentation_model_version: result.lesions.status === 'ready' ? result.lesions.model_version ?? null : null,
         review_status: 'pending',
         processing_mode: processingMode,
+        assessment_state: result.assessment.state,
+        referral_score: result.dr.referable_score,
+        referral_threshold: result.dr.referable_threshold,
+        referral_decision: result.dr.referable_decision,
+        model_sha256: result.model_identity.model_sha256,
+        config_sha256: result.model_identity.config_sha256,
+        calibration_version: result.model_identity.calibration_version,
+        explanation_status: result.explainability.status,
+        operation_id: operationId,
+        result_snapshot: buildResultSnapshot(result),
       },
     ])
     .select(SCREENING_COLUMNS);
@@ -298,7 +381,35 @@ export async function listScreenings(): Promise<ScreeningRecord[]> {
   return (data ?? []) as ScreeningRecord[];
 }
 
-const SCREENING_COLUMNS = 'id, patient_code, patient_age, patient_sex, image_key, status, quality_score, quality_label, dr_grade, dme_risk, confidence, referable_dr, recommendation, model_version, model_confidence_raw, model_confidence_calibrated, uncertainty_label, quality_model_version, classifier_model_version, segmentation_model_version, review_status, reviewed_at, processing_mode, created_at';
+const SCREENING_COLUMNS = 'id, patient_code, patient_age, patient_sex, image_key, status, quality_score, quality_label, dr_grade, dme_risk, confidence, referable_dr, recommendation, model_version, model_confidence_raw, model_confidence_calibrated, uncertainty_label, quality_model_version, classifier_model_version, segmentation_model_version, review_status, reviewed_at, processing_mode, assessment_state, referral_score, referral_threshold, referral_decision, model_sha256, config_sha256, calibration_version, explanation_status, operation_id, result_snapshot, created_at';
+
+function buildResultSnapshot(result: ScreeningResult): Record<string, unknown> {
+  return {
+    api_version: result.api_version,
+    assessment: result.assessment,
+    model_version: result.model_version,
+    model_identity: result.model_identity,
+    quality: result.quality,
+    dr: result.dr,
+    dme: result.dme,
+    structures: {
+      status: result.structures.status,
+      vessels: { status: result.structures.vessels.status },
+      optic_disc: { status: result.structures.optic_disc.status },
+      fovea: { status: result.structures.fovea.status },
+    },
+    lesions: { status: result.lesions.status, experimental: result.lesions.experimental },
+    explainability: {
+      status: result.explainability.status,
+      method: result.explainability.method,
+      clinical_interpretation: result.explainability.clinical_interpretation,
+    },
+    recommendation: result.recommendation,
+    uncertainty: result.uncertainty,
+    runtime: result.runtime,
+    disclaimer: result.disclaimer,
+  };
+}
 
 export async function submitScreeningReview(
   userId: string,

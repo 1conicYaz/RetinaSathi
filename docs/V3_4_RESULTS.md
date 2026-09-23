@@ -2,9 +2,12 @@
 
 Date: 2026-09-21
 
+This report records the first V3.4 seed. The later three-seed decision is in
+[`V3_4_THREE_SEED_STABILITY.md`](V3_4_THREE_SEED_STABILITY.md).
+
 ## Decision
 
-V3.4 seed 26038 is the first V3 candidate to pass both the predeclared calibration gate and the independent-source screening gate. It qualifies for adaptation-stability repeats with seeds 26039 and 26040. The locked official test remains unused and must stay closed until the repeat-seed decision is complete.
+V3.4 seed 26038 is the first V3 candidate to pass both the predeclared calibration gate and the patient-separated DeepDRiD source-validation gate. It qualifies for adaptation-stability repeats with seeds 26039 and 26040. The locked official test remains unused and must stay closed until the repeat-seed decision is complete.
 
 ## Design
 
@@ -25,7 +28,7 @@ V3.4 seed 26038 is the first V3 candidate to pass both the predeclared calibrati
 
 Selected referable threshold: 0.207326.
 
-## Independent DeepDRiD source validation
+## Patient-separated DeepDRiD source validation
 
 | Metric | V3.4 |
 |---|---:|

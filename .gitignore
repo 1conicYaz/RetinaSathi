@@ -55,3 +55,5 @@ simulink/slprj/
 *.autosave
 matlab/+idrid_multitask/
 matlab/+retinasathi_v3_4/
+
+.insforge/project.parent.json

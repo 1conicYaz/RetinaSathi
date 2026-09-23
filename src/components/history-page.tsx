@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../lib/auth-context';
 import { deleteScreening, listScreenings, submitScreeningReview, type ReviewDecision, type ScreeningRecord } from '../lib/screenings';
 import { AppIcon } from './app-icon';
+import { referralLabel } from '../lib/screening-contract';
 
 const gradeNames = ['No DR', 'Mild', 'Moderate', 'Severe', 'Proliferative'];
 
@@ -73,10 +74,10 @@ export function HistoryPage() {
           <tr>
             <td><strong>{record.patient_code}</strong><small>{record.patient_age ? `${record.patient_age} years` : 'Age not recorded'}</small></td>
             <td>{new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(record.created_at))}</td>
-            <td><span className={`grade-dot grade-dot--${record.dr_grade ?? 0}`}/>{record.dr_grade == null ? 'Pending' : `Grade ${record.dr_grade} · ${gradeNames[record.dr_grade]}`}</td>
+            <td><span className={`grade-dot grade-dot--${record.dr_grade ?? 0}`}/>{record.assessment_state === 'retake_required' ? 'Retake required' : record.assessment_state === 'not_assessed' ? 'Not assessed' : record.dr_grade == null ? 'Pending review' : `Grade ${record.dr_grade} · ${gradeNames[record.dr_grade]}`}</td>
             <td>{record.dme_risk == null ? '—' : `${record.dme_risk} / 2`}</td>
             <td><span className={`quality-tag quality-${record.quality_label ?? 'poor'}`}>{record.quality_label ?? 'unknown'}</span></td>
-            <td><span className={`referral-tag ${record.referable_dr ? 'referral-tag--yes' : ''}`}>{record.referable_dr ? 'Refer' : 'Routine'}</span></td>
+            <td><span className={`referral-tag ${record.assessment_state === 'assessed_referable' ? 'referral-tag--yes' : ''}`}>{referralLabel(record.assessment_state)}</span>{record.referral_score == null ? null : <small>{Math.round(record.referral_score * 100)}% / {Math.round((record.referral_threshold ?? 0) * 100)}%</small>}</td>
             <td><button className={`review-tag review-tag--${record.review_status}`} type="button" onClick={() => beginReview(record)}>{record.review_status.replaceAll('_', ' ')}</button></td>
             <td><button className="icon-button" type="button" disabled={deleting === record.id} onClick={() => void remove(record)} aria-label={`Delete screening ${record.patient_code}`}><AppIcon name="trash" size={17}/></button></td>
           </tr>

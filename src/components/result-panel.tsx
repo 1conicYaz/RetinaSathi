@@ -21,7 +21,8 @@ export function ResultPanel({ result, originalUrl, patient }: { result: Screenin
   const explanationAvailable = result.explainability.status !== 'unavailable';
   const explanationLabel = isGradCam ? 'Grad-CAM' : explanationAvailable ? 'Feature activation' : 'Attention map unavailable';
   const modelShortName = result.model_version.startsWith('classifier-v3.4') ? 'V3.4' : result.model_version.startsWith('classifier-v2') ? 'V2' : 'V1';
-  const referableProbability = result.dr.probabilities.slice(2).reduce((total, probability) => total + probability, 0);
+  const referralScore = result.dr.referable_score;
+  const referralThreshold = result.dr.referable_threshold;
   const strongestAttention = result.explainability.attention_regions.reduce((maximum, region) => Math.max(maximum, region.strength), 0);
   const selectedGradeProbability = result.dr_grade == null ? null : result.dr.probabilities[result.dr_grade] ?? result.confidence;
   const probabilityKind = result.dr.calibration_status === 'calibrated' ? 'calibrated probability' : 'model probability';
@@ -34,7 +35,9 @@ export function ResultPanel({ result, originalUrl, patient }: { result: Screenin
     ? 'छवि दोबारा लें। इस छवि से DR या DME परिणाम नहीं बनाया गया।'
     : result.recommendation.urgency === 'review'
       ? 'कम भरोसे वाले परिणाम की चिकित्सक से समीक्षा कराएं या छवि दोबारा लें।'
-      : result.referable_dr
+    : result.assessment.state === 'uncertain'
+      ? 'परिणाम अनिश्चित है। नेत्र विशेषज्ञ से समीक्षा कराएं।'
+    : result.referable_dr
       ? 'पुष्टि के लिए नेत्र विशेषज्ञ को रेफर करें।'
       : 'नियमित फॉलो-अप स्क्रीनिंग करें।';
   return (
@@ -42,10 +45,10 @@ export function ResultPanel({ result, originalUrl, patient }: { result: Screenin
       <div className="result-heading">
         <div>
           <p className="eyebrow">Screening result</p>
-          <h2>{result.quality.label === 'poor' ? 'Image retake required' : result.dr_label}</h2>
+          <h2>{result.assessment.state === 'retake_required' ? 'Image retake required' : result.assessment.state === 'not_assessed' ? 'Not assessed' : result.dr_label}</h2>
         </div>
         <span className={`urgency-pill ${urgent ? 'urgency-pill--urgent' : ''}`}>
-          {result.recommendation.urgency === 'review' ? 'Review needed' : urgent ? 'Action needed' : 'Routine follow-up'}
+          {result.assessment.state === 'retake_required' ? 'Retake required' : result.assessment.state === 'not_assessed' ? 'Not assessed' : result.recommendation.urgency === 'review' ? 'Review needed' : urgent ? 'Action needed' : 'Non-referable'}
         </span>
       </div>
 
@@ -58,12 +61,14 @@ export function ResultPanel({ result, originalUrl, patient }: { result: Screenin
         <div><dt>Model</dt><dd>{result.model_version}</dd></div>
         <div><dt>Review status</dt><dd>Pending human review</dd></div>
         <div><dt>Calibration</dt><dd>{result.dr.calibration_status.replaceAll('_', ' ')}</dd></div>
+        <div><dt>Model SHA</dt><dd>{result.model_identity.model_sha256.slice(0, 12)}…</dd></div>
+        <div><dt>Deployment</dt><dd>{result.model_identity.deployment_revision}</dd></div>
       </dl>
 
       <div className="explanation-summary">
         <span>{explanationLabel}</span>
         <p>{!explanationAvailable
-          ? 'The cloud ONNX model provides calibrated grading and referral output, but it does not contain the gradients needed for an attention map. Use the local V3.4 runtime for the experimental explanation.'
+          ? 'Explanation unavailable for this model version. V3.4 grading and referral outputs are shown without a heatmap because the prior map did not pass technical validation.'
           : isGradCam
           ? 'Brighter colours show image areas that influenced the model more. This is model attention, not a confirmed lesion.'
           : 'This is a coarse feature-activation map. It is not Grad-CAM, lesion detection, or anatomical proof.'}</p>
@@ -80,14 +85,15 @@ export function ResultPanel({ result, originalUrl, patient }: { result: Screenin
         <article><span>Confidence</span><strong>{confidenceLabel}</strong><small>{result.confidence == null ? 'No model prediction' : 'Model probability'}</small></article>
         <article><span>DME risk</span><strong>{dmeLabel}</strong><small>{result.dme_label}</small></article>
         <article><span>Image quality</span><strong>{Math.round(result.quality.score * 100)}%</strong><small className={`quality-${result.quality.label}`}>{result.quality.label}</small></article>
+        <article><span>Referable DR score</span><strong>{referralScore == null ? 'Not assessed' : `${Math.round(referralScore * 100)}%`}</strong><small>{referralScore == null ? 'No referral decision' : `Dedicated head · threshold ${Math.round(referralThreshold * 100)}%`}</small></article>
       </div>
 
       {result.dr_grade != null ? <section className="decision-explanation" aria-labelledby="decision-explanation-title">
         <div className="section-title"><div><p className="eyebrow">Why this result?</p><h3 id="decision-explanation-title">How {modelShortName} reached “Grade {result.dr_grade} · {gradeNames[result.dr_grade]}”</h3></div></div>
         <ol>
           <li><strong>Grade choice</strong><p>Grade {result.dr_grade} had the highest {probabilityKind} at {Math.round((selectedGradeProbability ?? 0) * 100)}%. The nearest alternatives were {competingGrades.map(({ grade, probability }) => `Grade ${grade} at ${Math.round(probability * 100)}%`).join(' and ')}.</p></li>
-          <li><strong>Referral decision</strong><p>The combined probability of referable DR (Grades 2–4) was {Math.round(referableProbability * 100)}%. {result.referable_dr ? 'This crossed the model’s referral operating point, so ophthalmologist review is recommended.' : 'This remained below the model’s referral operating point, but routine follow-up and human review still apply.'}</p></li>
-          <li><strong>Image and explanation evidence</strong><p>The image passed the quality check at {Math.round(result.quality.score * 100)}%. {explanationAvailable ? `The explanation found ${result.explainability.attention_regions.length} influential region${result.explainability.attention_regions.length === 1 ? '' : 's'}${strongestAttention ? `, with the strongest attention score at ${Math.round(strongestAttention * 100)}%` : ''}. These regions influenced the score but are not confirmed lesions.` : 'This cloud export does not provide an attention map. The grade is explained by its calibrated probabilities and referral score; the local V3.4 runtime can produce an experimental attention view.'}</p></li>
+          <li><strong>Referral decision</strong><p>{referralScore == null ? 'No referral score was produced because the image was not assessed.' : `The dedicated referable-DR head produced ${Math.round(referralScore * 100)}% against a ${Math.round(referralThreshold * 100)}% threshold. ${result.dr.referable_decision ? 'It crossed the threshold, so ophthalmologist review is recommended.' : 'It remained below the threshold.'}`} This score is separate from the five grade probabilities, so the two outputs may disagree.</p></li>
+          <li><strong>Image and explanation evidence</strong><p>The image passed the quality check at {Math.round(result.quality.score * 100)}%. {explanationAvailable ? `The explanation found ${result.explainability.attention_regions.length} influential region${result.explainability.attention_regions.length === 1 ? '' : 's'}${strongestAttention ? `, with the strongest attention score at ${Math.round(strongestAttention * 100)}%` : ''}. These regions influenced the score but are not confirmed lesions.` : 'No V3.4 attention map is shown because the explanation method has not passed technical validation.'}</p></li>
         </ol>
         <div className="clinical-meaning"><strong>Clinical meaning of this grade — reference only</strong><p>{clinicalGradeMeaning[result.dr_grade]}</p><p>{modelShortName} has not verified the required lesions because lesion segmentation is not validated. An ophthalmologist must compare the original image with the clinical grading criteria before confirming the grade.</p></div>
         <p className="decision-explanation__hindi" lang="hi">मॉडल ने ग्रेड {result.dr_grade} चुना क्योंकि इसी ग्रेड की संभावना सबसे अधिक थी। यह किसी विशेष घाव की पुष्टि नहीं है। अंतिम पुष्टि नेत्र विशेषज्ञ करेंगे।</p>
@@ -109,7 +115,7 @@ export function ResultPanel({ result, originalUrl, patient }: { result: Screenin
             <div><strong>Model attention</strong><p>{region.evidence}</p></div>
             <span>{Math.round(region.strength * 100)}%</span>
           </div>
-        )) : <p className="muted-copy">{explanationAvailable ? 'No strong focal attention regions were found.' : 'No cloud attention map was generated. Use local V3.4 when an experimental explanation is needed.'}</p>}
+        )) : <p className="muted-copy">{explanationAvailable ? 'No strong focal attention regions were found.' : 'Explanation unavailable for this model version.'}</p>}
       </div>
 
       {(result.lesions.overlay_image || result.structures.vessels.overlay_image || result.structures.localization_overlay_image) ? <div className={`advanced-only ${view === 'operator' ? 'advanced-only--hidden' : ''}`}>

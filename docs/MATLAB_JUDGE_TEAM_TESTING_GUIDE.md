@@ -184,18 +184,18 @@ clinical claim. Grade 1, Grade 3 and Grade 4 remain the harder classes.
 
 ## Hosting decision
 
-The exact FP32 V3.4 model loads on InsForge's 512 MiB free compute machine, but
-the machine restarts during a real prediction and returns HTTP 502. InsForge
-also rejected a 1 GiB request because the free plan caps a machine at 512 MiB.
-The live InsForge service was rolled back to the previous V1 image. Its health
-endpoint loads, but a final real-image check still produced HTTP 502 and machine
-restart events. Do not depend on InsForge inference during the judge demo until
-that separate service fault is resolved, and do not present it as V3.4.
+An older deployment attempted to run FP32 V3.4 inside InsForge's 512 MiB compute
+limit and returned HTTP 502 during real prediction. That configuration is no
+longer the current architecture. The current website uses InsForge for auth,
+storage and an authenticated proxy, while the V3.4 ONNX runtime runs in Azure
+Container Apps with 1 vCPU and 2 GiB. Verify `/health`, `/model-card` and one
+signed-in screening before each judge demonstration because cloud state can
+change independently of this guide.
 
 Use `compute/Dockerfile.v3_4` for Azure with at least **1 GiB RAM** and one CPU;
 2 GiB is preferred for demonstrations and concurrent requests. A GPU is not
 required for V3.4 ONNX inference. The default `compute/Dockerfile` remains the
-working InsForge V1 rollback image.
+verified local V3.4 fallback image.
 
 An INT8 experiment was rejected: it reduced the ONNX file to about 24 MiB but
 changed 2 of 25 grade decisions and shifted a grade probability by up to 11.4

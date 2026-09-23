@@ -118,5 +118,6 @@ assert(report.passed);
 - Exact grade remains weaker than referable screening; Grade 4 recall is a known weakness.
 - The MATLAB V3.4 attention map has not been validated. The UI must not show an
   unverified map or describe attention as lesion localization.
-- The public cloud remains the lightweight V1 backup. V3.4 is intended for a
-  controlled local clinician-review demonstration with mandatory human review.
+- The current public application routes authenticated requests to the protected
+  Azure V3.4 ONNX service. A verified local V3.4 runtime remains the presentation
+  fallback for a controlled demonstration with mandatory human review.
