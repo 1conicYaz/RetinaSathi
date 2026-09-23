@@ -12,8 +12,8 @@
 | Human review | Operator-owned review event | Source and RLS | Verified clinician roles, assignment queue and audit governance |
 | Cloud inference | Authenticated InsForge proxy to Azure | Fresh cloud inspection | Monitoring, per-user quota, explicit probes and restore drills |
 | Offline | Browser queue and local inference option | Source; limited lifecycle evidence | Encrypted managed-device queue and robust two-way reconciliation |
-| MATLAB | Native V3.4 preprocessing/inference/parity app | Historical 8 tests and 25 parity cases | Automated cross-runtime release gate |
-| SimEvents | Executable capacity model | Historical 14 checks | Parameters measured in real clinics and uncertainty analysis |
+| MATLAB | Native V3.4 preprocessing/inference/parity app | Fresh 8 tests and 25 parity cases | Automated cross-runtime release gate |
+| SimEvents | Executable capacity model | Fresh 14/14 checks across seven scenarios | Parameters measured in real clinics and uncertainty analysis |
 | Clinical validity | None claimed | No prospective study | Ethics-approved, independently graded, multi-site evaluation |
 
 Current outputs always require qualified human review and must not be used as an autonomous diagnosis.

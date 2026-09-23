@@ -1,6 +1,6 @@
 # Azure and InsForge deployment verification
 
-Verification date: 23 September 2026. Secret values are intentionally omitted.
+Verification date: 24 September 2026. Secret values are intentionally omitted.
 
 ## Architecture
 
@@ -22,9 +22,9 @@ flowchart LR
 | Function authentication | Requires bearer token and calls `auth.getCurrentUser()` | Pass |
 | Azure app | `retinasathi-v34`, resource group `retinasathi-azure`, UAE North | Pass |
 | Revision | `retinasathi-v34--latest`, active, healthy, 100% traffic | Pass |
-| Container | `retinasathiv34uae.azurecr.io/retinasathi-v34:3` | Pass |
+| Container | `retinasathiv34uae.azurecr.io/retinasathi-v34:6` | Pass |
 | Runtime model | `classifier-v3.4-seed26038` | Pass |
-| Architecture | Partial DINOv2 ViT-S/14, ONNX CPU | Supported by manifest; runtime identity enhancement pending deployment |
+| Architecture | Partial DINOv2 ViT-S/14, ONNX CPU | Pass; live runtime identity |
 | Referral threshold | `0.20732617378234863` | Pass |
 | Ingress | External HTTPS; insecure HTTP disabled | Pass |
 | Prediction authentication | Azure checks `X-Inference-Key`; secret is held by InsForge function | Pass |
@@ -32,8 +32,8 @@ flowchart LR
 | Scale | minimum 0, maximum 1, HTTP trigger at 10 concurrent requests | Pass |
 | Resources | 1 vCPU, 2 GiB memory | Pass |
 | Health probes | No explicit Container Apps probes configured | Partial |
-| Model artifact SHA in live health | Not returned by current revision | Partial; fixed in release branch |
-| Build commit and deployment revision in live prediction | Not returned by current revision | Partial; fixed in release branch |
+| Model artifact SHA in live health | `8d5373211b8651e1a3c787a19bfd52a64383d8a2296f370cbf2615467422b2ec` | Pass |
+| Build commit and deployment revision | `89615dc`; `retinasathi-v34--latest` | Pass |
 | Warm/cold latency | Not measured during this verification | Not run |
 
 ## Security properties
@@ -41,7 +41,7 @@ flowchart LR
 | Property | Result | Evidence and limit |
 |---|---|---|
 | Azure key absent from browser bundle | Pass | Browser calls the InsForge function; deployed function reads the key from server environment |
-| Direct anonymous prediction blocked | Pass | Authenticated file request without key is expected to receive 401; malformed request alone receives FastAPI 422 before route authentication |
+| Direct anonymous prediction blocked | Pass | A valid public retinal fixture submitted without a key returned HTTP 401 with structured `UNAUTHORIZED` error |
 | Private retinal storage | Pass | Live bucket is private; owner policies exist in migrations; fresh storage-policy SQL should be retained with release evidence |
 | Owner-scoped screening rows | Pass | Live `screenings`, `screening_reviews` and `screening_lesions` policies were listed and are owner scoped |
 | Secret values excluded from Git | Pass subject to final secret scan | `.env*` and `.insforge/project.json` are ignored |
@@ -64,4 +64,6 @@ Before an SIH demonstration, verify all of the following against the same releas
 5. A poor image returns `retake_required` and no referral decision.
 6. The website saves and reloads the same state from History.
 
-The final authenticated upload/save/history test is not complete until a permitted public fixture is submitted through the signed-in website after the new release is deployed.
+The signed-in screening page was freshly reached through GitHub OAuth. The final
+file upload/save/history test is **NOT RUN** because Chrome extension file access
+was disabled on the verification machine. No pass is claimed.
