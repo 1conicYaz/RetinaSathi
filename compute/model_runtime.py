@@ -395,7 +395,8 @@ class RetinaSathiPredictor:
             "calibration_version": getattr(self, "calibration_version", "unavailable"),
             "explanation_capability": getattr(self, "explainability_mode", "unavailable"),
             "build_commit": os.getenv("BUILD_COMMIT", "unavailable"),
-            "deployment_revision": os.getenv("CONTAINER_APP_REVISION", "unavailable"),
+            "deployment_revision": os.getenv("CONTAINER_APP_REVISION")
+            or os.getenv("DEPLOYMENT_RELEASE", "unavailable"),
         }
 
     def predict(self, image: Image.Image) -> dict[str, object]:
