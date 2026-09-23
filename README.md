@@ -141,6 +141,9 @@ throughput.
 
 ## Evidence index
 
+- [Complete project explanation](docs/COMPLETE_PROJECT_EXPLANATION.md)
+- [Final SIH remediation report](docs/SIH_FINAL_REMEDIATION_REPORT.md)
+- [Demo runbook](DEMO.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Model selection rationale](docs/MODEL_SELECTION_AND_APPROACH_REPORT.md)
 - [V3.4 results](docs/V3_4_RESULTS.md)
