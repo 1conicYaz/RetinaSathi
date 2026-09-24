@@ -1,38 +1,38 @@
-# Documentation guide
+# Documentation
 
-The repository separates measured evidence from plans so readers can see what
-works today and what still requires validation.
+Start with the MathWorks workflow, then inspect model evidence and the supporting
+deployment. Measured results, simulations and future plans are kept separate.
 
-## Start here
+## SIH and architecture
 
-1. [Complete project explanation](COMPLETE_PROJECT_EXPLANATION.md) — plain-language
-   walkthrough from the clinical problem to deployment and future work.
-2. [Architecture](ARCHITECTURE.md) — implemented system boundaries and data flow.
-3. [Model selection](MODEL_SELECTION_AND_APPROACH_REPORT.md) — why EfficientNet,
-   DINOv2 and RETFound were compared.
-4. [V3.4 results](V3_4_RESULTS.md) and [three-seed stability](V3_4_THREE_SEED_STABILITY.md)
-   — retrospective source-validation evidence.
-5. [V3 data card](V3_DATA_CARD.md) — sources, splits, duplicates and limitations.
+1. [SIH26038 alignment](SIH26038.md)
+2. [System architecture](ARCHITECTURE.md)
+3. [MATLAB and Simulink/SimEvents](MATLAB_SIMEVENTS.md)
 
-## Engineering verification
+## Model and data evidence
 
-- [MATLAB parity](V3_4_MATLAB_PARITY_REPORT.md) — Python, ONNX and MATLAB
-  implementation consistency.
-- [SimEvents results](SIMULATION_RESULTS.md) — operational scenarios under
-  declared assumptions.
-- [Azure deployment verification](AZURE_DEPLOYMENT_VERIFICATION.md) — deployed
-  model identity, access path and known gaps.
-- [SIH, MATLAB and Simulink audit](SIH_MATLAB_SIMULINK_FULL_AUDIT.md) — testing
-  instructions and requirement status.
+- [Model selection rationale](MODEL_SELECTION_AND_APPROACH_REPORT.md)
+- [V3.4 selected-seed results](V3_4_RESULTS.md)
+- [V3.4 three-seed stability](V3_4_THREE_SEED_STABILITY.md)
+- [V3 data card](V3_DATA_CARD.md)
+- [Dataset strategy and EyePACS decision](DATASET_STRATEGY.md)
+- [Dataset inventory](DATASET_INVENTORY.md)
+- [Data validation](DATA_VALIDATION.md)
+- [External validation protocol](EXTERNAL_VALIDATION_PROTOCOL.md)
+- [MATLAB parity evidence](V3_4_MATLAB_PARITY_REPORT.md)
+- [SimEvents results](SIMULATION_RESULTS.md)
 
-## Presentation and next steps
+## Deployment and interfaces
 
-- [Judge questions and answers](SIH_JUDGE_QA.md)
-- [Suggested six-slide deck](SIH_SIX_SLIDE_CONTENT.md)
-- [Demo video script](SIH_VIDEO_SCRIPT.md)
-- [Clinical pilot plan](V3_4_CLINICAL_PILOT_AND_APP_INTEGRATION.md)
-- [Future roadmap](FUTURE_ROADMAP.md)
+- [Azure deployment verification](AZURE_DEPLOYMENT_VERIFICATION.md)
+- [API contract](API_V2.md)
+- [Clinical pilot and application integration plan](V3_4_CLINICAL_PILOT_AND_APP_INTEGRATION.md)
 
-Source validation, software verification, simulation estimates and prospective
-clinical evidence are different forms of evidence. The documents do not treat
-one as proof of another.
+## Future work
+
+- [Research roadmap](ROADMAP.md)
+- [Indian retinal-image collection protocol](INDIAN_RETINAL_IMAGE_COLLECTION_PROTOCOL.md)
+
+Source validation is retrospective model evidence. MATLAB parity is software
+consistency. SimEvents outputs are capacity estimates. None of these alone is
+prospective clinical validation.

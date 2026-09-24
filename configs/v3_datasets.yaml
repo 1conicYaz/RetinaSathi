@@ -45,10 +45,11 @@ deferred_until_audit:
   - name: EyePACS
     role: optional large classifier source
     status: archive copied to external SSD; extraction and audit pending
+    patient_grouping: subject_id parsed from official subject_id_left/right filename
     requirements:
       - Verify Kaggle competition terms for the intended use.
       - Extract only on external storage.
-      - Recover patient/left-right grouping where possible.
+      - Verify every label and group both eyes by official subject ID before splitting.
       - Audit exact and near duplicates before split assignment.
   - name: BRSET_or_mBRSET
     role: candidate untouched external or portable-camera evaluation
@@ -74,7 +75,6 @@ researched_public_candidates_2026:
     labels: multi-label 51-disease classification
     role: non-DR disease and out-of-distribution testing
     status: downloaded from official Zenodo record; checksum verified; excluded after label-image ID audit
-    local_archive: /Volumes/External SS/RetinaSathi_Data/public_candidates/RFMiD_2_0/RFMiD2_0.zip
     upstream_md5: f9fe268dd74825fd89a9e212c1e48624
     audit_report: artifacts/rfmid_2_0_audit.json
     caution: Not a five-grade DR dataset. The official archive contains label-image ID mismatches in its training and test splits, and its Zenodo page does not display a license. Do not train, redistribute, or map it into ICDR grades until reconciled and rights are confirmed.

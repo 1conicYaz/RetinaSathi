@@ -540,12 +540,12 @@
       "licence": "Kaggle competition terms; do not redistribute",
       "split_policy": "Opt-in only; archive remains unextracted when disk headroom is insufficient",
       "grade_scale": "DR 0-4",
-      "patient_identifiers": "unknown while archive remains compressed",
+      "patient_identifiers": "official filenames encode subject ID and left/right eye; verify after extraction",
       "annotation_types": [],
       "class_distribution": {
         "status": "not available from a verified plain-text label file"
       },
-      "duplicate_risk": "Archive contents uninspected; left/right eye and patient grouping must be handled after extraction",
+      "duplicate_risk": "Archive contents uninspected; verify labels and group official subject_id_left/right pairs before splitting",
       "canonical_roots": [
         "raw"
       ],

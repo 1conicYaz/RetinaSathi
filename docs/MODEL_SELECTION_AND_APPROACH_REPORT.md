@@ -271,25 +271,7 @@ This is more defensible than selecting a famous model, reporting only accuracy, 
 8. Distil V3.4 into EfficientNet-B3, EfficientNetV2-S, or another compact student only if latency or memory measurements require it.
 9. Recalibrate and validate any student independently; it cannot inherit the teacher's evidence automatically.
 
-## 13. Explanation for teammates and judges
-
-Use this short explanation:
-
-> We used several models because each one tested a different idea. EfficientNet-B3 gave us a strong and efficient convolutional baseline. Frozen DINOv2 tested whether general foundation features were already useful. Frozen RETFound tested whether retinal-specific pretraining automatically transferred, and it failed on the middle grades, so we rejected that adaptation. We then partially adapted the final DINOv2 blocks. This kept its general visual knowledge while allowing it to learn our retinal domain. V3.4 was selected because all three repeated runs exceeded our referable-DR sensitivity and specificity gates. Exact five-grade performance remains weaker, so RetinaSathi is screening support with mandatory human review.
-
-If asked why RETFound was not selected:
-
-> RETFound is a strong retinal foundation model, but model quality depends on adaptation, preprocessing, labels, and evaluation data. Our frozen RETFound probe achieved zero recall for Grades 1–3 on the diagnostic source. We recorded the failure instead of selecting it because of its name.
-
-If asked why EfficientNet was not selected:
-
-> EfficientNet-B3 detected most referable cases, but its V3.1 specificity was 77.73%, which would produce too many unnecessary referrals. Partially adapted DINOv2 provided a better sensitivity-specificity balance.
-
-If asked whether V3.4 is clinically ready:
-
-> No. It is a frozen research screening candidate with retrospective source validation. Independent Indian-camera testing and prospective clinician-supervised validation are still required.
-
-## 14. Primary model references
+## 13. Primary model references
 
 - EfficientNet paper: <https://proceedings.mlr.press/v97/tan19a.html>
 - DINOv2 official repository: <https://github.com/facebookresearch/dinov2>
