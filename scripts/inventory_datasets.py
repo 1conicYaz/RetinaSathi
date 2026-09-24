@@ -102,7 +102,7 @@ PATIENT_IDS = {
     "IDRiD": "not present in verified grading label columns",
     "DRIVE": "not present in verified file layout",
     "Messidor": "not verified in legacy workbook labels",
-    "EyePACS": "unknown while archive remains compressed",
+    "EyePACS": "official filenames encode subject ID and left/right eye; verify after extraction",
 }
 
 DUPLICATE_RISKS = {
@@ -111,7 +111,7 @@ DUPLICATE_RISKS = {
     "IDRiD": "The same fundus may appear in grading, segmentation, and localization tasks; task files are not unique patients",
     "DRIVE": "One photograph has image, FOV, and one or two manual masks; file count is not photograph count",
     "Messidor": "Original extraction and normalized image views coexist; canonical image view only",
-    "EyePACS": "Archive contents uninspected; left/right eye and patient grouping must be handled after extraction",
+    "EyePACS": "Archive contents uninspected; verify labels and group official subject_id_left/right pairs before splitting",
 }
 
 

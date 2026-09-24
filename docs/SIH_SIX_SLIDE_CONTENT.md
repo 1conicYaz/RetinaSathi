@@ -10,20 +10,21 @@ Keep the deck to six slides including the title. Use screenshots from the verifi
 - Vision: affordable, human-in-the-loop screening support.
 - Position clearly: research prototype; not a diagnosis.
 
-## Slide 2 — Working prototype
+## Slide 2 — Proposed solution and MATLAB architecture
 
-Show: `Fundus image → quality gate → V3.4 → referral + grade → human review → protected history`.
+Show: `Fundus image → quality gate → V3.4 ONNX → MATLAB calibration/referral + grade → human review`.
 
-- React + InsForge authentication/storage
-- authenticated function → protected Azure Container App
-- MATLAB parity and SimEvents planning
+- Frozen preprocessing, model hash, calibration and referral threshold
+- 8 MATLAB tests and 25/25 Python-reference parity cases
 - DME, lesion analysis and V3.4 XAI marked unavailable/future
 
-## Slide 3 — Technical evidence
+## Slide 3 — SimEvents and AI evidence
 
+- Show the executable capture → recapture → network → AI → reviewer workflow
+- Explain camera, network, compute and reviewer bottlenecks
 - V3.4: partial DINOv2 ViT-S/14, 392 × 392, 84.27 MiB ONNX
 - Selected 400-image reused DeepDRiD source holdout: sensitivity 92.22%, specificity 91.36%, AUROC 0.9756, QWK 0.7910, macro-F1 0.5339
-- Fresh engineering checks: 8 MATLAB tests, 25/25 parity cases, 14/14 SimEvents checks
+- 14/14 SimEvents checks; label throughput as simulation
 - Footnote: retrospective source validation; not prospective clinical validation
 
 ## Slide 4 — Safety and honesty
@@ -34,17 +35,18 @@ Show: `Fundus image → quality gate → V3.4 → referral + grade → human rev
 - V3.4 XAI disabled after failed technical validation
 - Known gaps: independent cohort, exact grading, OOD breadth, clinical governance
 
-## Slide 5 — Deployment and roadmap
+## Slide 5 — Supporting deployment and feasibility
 
 Show: `Browser → InsForge Auth → server function → Azure V3.4 ONNX`.
 
 - Private storage and owner-scoped history
 - Scale-to-zero: lower idle cost, possible cold-start delay
-- Next: independent intended-camera evaluation → stronger quality/OOD → validated XAI/pathology → edge optimization → controlled pilot
+- State that the present one-replica service has not demonstrated 5,000 cases in two minutes
 
-## Slide 6 — Potential impact and ask
+## Slide 6 — Research roadmap, impact and ask
 
 - Potential earlier prioritization and more organized screening workflows
 - SimEvents supports capacity planning; it is not field throughput evidence
-- Ask for clinical/data partnership, intended-camera evaluation and deployment mentoring
+- Research → ophthalmologists → independent Indian data → validated XAI → distillation → secure edge/offline → controlled pilot
+- Ask for clinical/data partnership, intended-camera evaluation and MathWorks mentoring
 - Add GitHub, demo URL and contact QR codes only if permitted

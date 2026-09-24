@@ -15,7 +15,35 @@ curl -fsS https://retinasathi-v34.proudcoast-d5c4449c.uaenorth.azurecontainerapp
 
 Confirm model `classifier-v3.4-seed26038`, architecture `dinov2_vits14`, input 392 and threshold `0.20732617378234863`. Never show keys or `.env` files.
 
-## Live cloud demonstration
+## Demonstration order
+
+Present MATLAB and SimEvents before the supporting website. If time is limited,
+do not cut the MathWorks components before the web demonstration.
+
+## MATLAB demonstration
+
+```bash
+./scripts/verify_v3_4_matlab.sh
+```
+
+Expected verified summary: `PASS: 8 MATLAB tests, 25 parity cases, grade 1.000, referral 1.000`.
+
+Say: “This proves implementation parity with the frozen artifact, not clinical validation.”
+
+## SimEvents demonstration
+
+In MATLAB:
+
+```matlab
+cd('simulink')
+report = verify_simevents_workflow(true, "results/simevents");
+launch_simevents_demo
+```
+
+Show queues and the scenario dashboard before the website. State that annual
+equivalents are simulation estimates under declared assumptions.
+
+## Supporting web/cloud demonstration
 
 1. Open <https://69exmaqk.insforge.site/>.
 2. Sign in with the demo account without exposing credentials.
@@ -49,28 +77,6 @@ Check:
 curl -fsS http://127.0.0.1:8000/health
 curl -fsS http://127.0.0.1:8000/model-card
 ```
-
-## MATLAB demonstration
-
-```bash
-./scripts/verify_v3_4_matlab.sh
-```
-
-Expected verified summary: `PASS: 8 MATLAB tests, 25 parity cases, grade 1.000, referral 1.000`.
-
-Say: “This proves implementation parity with the frozen artifact, not clinical validation.”
-
-## SimEvents demonstration
-
-In MATLAB:
-
-```matlab
-cd('simulink')
-report = verify_simevents_workflow(true, "results/simevents");
-launch_simevents_demo
-```
-
-Show the queues and scenario dashboard. Say: “This is an operational simulation under declared assumptions. The annual-equivalent values are not observed patient throughput.”
 
 ## Recovery rules
 

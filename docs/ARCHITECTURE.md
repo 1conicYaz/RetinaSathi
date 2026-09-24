@@ -1,8 +1,28 @@
 # RetinaSathi architecture
 
-RetinaSathi separates image inference, product workflow and operational
-simulation. This separation keeps model evidence distinct from service-capacity
-estimates.
+RetinaSathi separates MATLAB-compatible image inference, SimEvents operational
+simulation and the supporting web deployment. This keeps model evidence,
+capacity estimates and product behavior distinct.
+
+## System view
+
+```mermaid
+flowchart TD
+    Camera[Fundus camera] --> Quality{Quality and recapture}
+    Quality -->|Gradeable| V34[RetinaSathi V3.4 ONNX]
+    V34 --> MATLAB[MATLAB preprocessing, calibration and parity]
+    MATLAB --> Decision[Referral score and Grade 0–4]
+    Decision --> Human[Mandatory human review]
+    Human --> Report[Screening-support report]
+    Workflow[Simulink / SimEvents operational model] -. models queues and resources .-> Camera
+    Workflow -. capacity planning .-> Human
+    Web[React + InsForge + Azure interface] -. supporting deployment path .-> V34
+    Web -. protected workflow .-> Report
+```
+
+The diagram contains two related paths. Solid arrows show one-image screening.
+Dotted arrows show simulation or deployment support; SimEvents does not execute
+the image model for each synthetic visit.
 
 ## Retinal inference
 
@@ -34,16 +54,15 @@ the ONNX SHA-256 recorded in the manifest, reproduces the preprocessing and
 calibration policy, and matched 25/25 Python reference decisions in the parity
 cohort.
 
-## Application and storage
+## Supporting application and storage
 
 ```mermaid
 flowchart LR
     Operator[Operator] --> PWA[React PWA]
-    PWA --> Router{Inference route}
-    Router -->|Local| API[FastAPI V3.4 runtime]
-    Router -->|Cloud backup| Cloud[Lightweight cloud runtime]
-    API --> Result[Versioned result contract]
-    Cloud --> Result
+    PWA --> Auth[InsForge authentication]
+    Auth --> Fn[Authenticated server function]
+    Fn --> Azure[Protected Azure V3.4 ONNX service]
+    Azure --> Result[Versioned result contract]
     Result --> DB[Protected screening record]
     Result --> Private[Private image storage]
     DB --> Reviewer[Reviewer view]
@@ -53,8 +72,9 @@ flowchart LR
 
 Authentication, private storage and owner-scoped database policies are handled
 through InsForge. The client stores a pseudonymous patient reference rather
-than a patient name. An optional seven-day device-local retry queue is available
-for temporary connectivity failures and is intended only for secured devices.
+than a patient name. A local FastAPI runtime is available for development and
+demo fallback. The optional seven-day browser retry queue requires stronger
+device security and recovery testing before any pilot.
 
 ## SimEvents operational model
 

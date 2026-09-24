@@ -72,7 +72,7 @@ Every answer separates evidence available now from planned work.
 **CURRENT:** No approval or endorsement is claimed. **FUTURE:** Seek qualified partners for protocol and usefulness review.
 
 ## 24. What datasets were used?
-**CURRENT:** Project experiments document EyePACS, APTOS, IDRiD and DeepDRiD under their respective labels/licenses. **FUTURE:** Add governed intended-camera Indian data.
+**CURRENT:** Verified V3.4 development used APTOS, IDRiD and DeepDRiD. EyePACS was not used. **FUTURE:** Audit EyePACS for a controlled development experiment and add governed intended-camera Indian data.
 
 ## 25. Is DeepDRiD an untouched independent test?
 **CURRENT:** No. The patient-separated holdout is source validation and the source also contributed development images. **FUTURE:** Freeze a truly independent cohort.
@@ -121,3 +121,15 @@ Every answer separates evidence available now from planned work.
 
 ## 40. What is the biggest limitation?
 **CURRENT:** Lack of independent prospective intended-camera clinical validation. **FUTURE:** Address that before positioning the system for patient care.
+
+## 41. Is MATLAB only a wrapper around a Python model?
+**CURRENT:** Training occurred in Python, but MATLAB independently reproduces the frozen preprocessing, ONNX execution, calibration and threshold contract and verifies parity. **FUTURE:** Add licensed MATLAB CI and evaluate deployable MATLAB packaging.
+
+## 42. Can you process 5,000 cases in two minutes?
+**CURRENT:** No such result has been demonstrated. That target requires 41.67 completed cases per second; the current Azure service allows one replica. **FUTURE:** Benchmark, model the required workers in SimEvents, add durable queues/autoscaling and run staged load tests before making the claim.
+
+## 43. Why did V3.4 not use EyePACS?
+**CURRENT:** The archive was not admitted to the verified V3 manifest; extraction, integrity, labels, subject grouping, duplicates and usage terms were not fully audited. **FUTURE:** Run a controlled experiment to test whether curated EyePACS improves weak grades without weakening Indian-source referral performance.
+
+## 44. Why is RetinaSathi unique?
+**CURRENT:** Its contribution is the verified integration of calibrated referral and grading, explicit safe-failure states, MATLAB parity, executable SimEvents capacity planning, protected human-review workflow and transparent limitations. Individual components such as DINOv2, ONNX or Azure are not claimed as inventions. **FUTURE:** Establish whether this integration improves real clinical workflow and outcomes.
