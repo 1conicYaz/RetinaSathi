@@ -1,6 +1,7 @@
 # RetinaSathi research roadmap
 
-Planning ranges are priorities, not promises. Major changes follow:
+The roadmap is organized by dependency and evidence, without calendar promises.
+Major changes follow:
 
 **Research → Hypothesis → Experiment → Validation → Integration**
 
@@ -24,7 +25,7 @@ Planning ranges are priorities, not promises. Major changes follow:
 - InsForge server function to protected Azure Container Apps inference
 - Explicit assessment states, model provenance and human-review requirement
 
-## 0–1 month: SIH stabilization
+## Priority 1: stabilize the SIH demonstration
 
 - Reproduce the MATLAB and SimEvents demonstration on the presentation machine.
 - Verify one signed-in Azure screening, save, History and reload.
@@ -33,7 +34,7 @@ Planning ranges are priorities, not promises. Major changes follow:
 - Rehearse a MATLAB-first demo with a local fallback.
 - Replace unsupported 5,000-case claims with measured benchmarks and simulation.
 
-## 1–3 months: research and clinical understanding
+## Priority 2: strengthen research and clinical understanding
 
 - Review current DR grading, quality/OOD and transformer-attribution literature.
 - Interview ophthalmologists about capture quality, dangerous errors, referral
@@ -48,7 +49,7 @@ Planning ranges are priorities, not promises. Major changes follow:
 No document may state “doctors validated RetinaSathi” until supporting evidence
 exists. The current goal is ophthalmologist collaboration and workflow research.
 
-## 3–6 months: data, model safety and independent evidence
+## Priority 3: build independent data and safety evidence
 
 - Prepare an Indian intended-camera cohort with governance, patient grouping,
   two qualified graders and adjudication.
@@ -86,7 +87,7 @@ Goal: reduce memory, latency and cloud dependence while preserving safety.
 
 Distillation is future research. No distilled RetinaSathi model exists today.
 
-## 6–12 months: controlled pilot readiness
+## Priority 4: prepare for a controlled pilot
 
 - Implement encrypted local inference, resumable synchronization, idempotency,
   secure model updates and recovery from interrupted connectivity.
@@ -96,7 +97,7 @@ Distillation is future research. No distilled RetinaSathi model exists today.
 - Complete threat modelling, access audits, backup/restore drills and monitoring.
 - Prepare a controlled pilot only with institutional, ethical and clinical support.
 
-## 12+ months: multi-centre and regulatory research
+## Priority 5: multi-centre and regulatory research
 
 - Evaluate multiple clinics, cameras, populations and acquisition conditions.
 - Monitor calibration, data drift, referral completion and safety incidents.
