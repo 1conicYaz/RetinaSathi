@@ -25,13 +25,13 @@ Major changes follow:
 - InsForge server function to protected Azure Container Apps inference
 - Explicit assessment states, model provenance and human-review requirement
 
-## Priority 1: stabilize the SIH demonstration
+## Priority 1: stabilize the verified prototype
 
-- Reproduce the MATLAB and SimEvents demonstration on the presentation machine.
-- Verify one signed-in Azure screening, save, History and reload.
+- Reproduce MATLAB and SimEvents verification on a clean reference environment.
+- Verify one authenticated Azure screening, persistence and reload.
 - Record model/config hashes, Git commit and active Azure revision.
 - Keep V3.4 XAI disabled and unavailable modules visible.
-- Rehearse a MATLAB-first demo with a local fallback.
+- Maintain a tested local inference fallback.
 - Replace unsupported 5,000-case claims with measured benchmarks and simulation.
 
 ## Priority 2: strengthen research and clinical understanding

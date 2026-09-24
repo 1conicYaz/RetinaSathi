@@ -224,5 +224,5 @@ and secure offline/edge operation.
 
 ## Documentation
 
-[Documentation index](docs/README.md) · [demo runbook](DEMO.md) ·
-[architecture](docs/ARCHITECTURE.md) · [judge Q&A](docs/SIH_JUDGE_QA.md)
+[Documentation index](docs/README.md) · [architecture](docs/ARCHITECTURE.md) ·
+[SIH26038 alignment](docs/SIH26038.md)

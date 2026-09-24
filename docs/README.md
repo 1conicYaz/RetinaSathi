@@ -8,7 +8,6 @@ deployment. Measured results, simulations and future plans are kept separate.
 1. [SIH26038 alignment](SIH26038.md)
 2. [System architecture](ARCHITECTURE.md)
 3. [MATLAB and Simulink/SimEvents](MATLAB_SIMEVENTS.md)
-4. [Demo runbook](../DEMO.md)
 
 ## Model and data evidence
 
@@ -29,11 +28,8 @@ deployment. Measured results, simulations and future plans are kept separate.
 - [API contract](API_V2.md)
 - [Clinical pilot and application integration plan](V3_4_CLINICAL_PILOT_AND_APP_INTEGRATION.md)
 
-## Presentation and future work
+## Future work
 
-- [Judge questions and answers](SIH_JUDGE_QA.md)
-- [Suggested six-slide deck](SIH_SIX_SLIDE_CONTENT.md)
-- [Video script](SIH_VIDEO_SCRIPT.md)
 - [Research roadmap](ROADMAP.md)
 - [Indian retinal-image collection protocol](INDIAN_RETINAL_IMAGE_COLLECTION_PROTOCOL.md)
 

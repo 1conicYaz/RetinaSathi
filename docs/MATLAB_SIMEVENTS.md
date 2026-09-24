@@ -94,19 +94,6 @@ The district scenario completed 508 simulated visits in ten hours, equivalent
 to 127,000 visits over 250 identical days. These are simulation outputs based
 on declared assumptions, not observed clinical throughput.
 
-## What to demonstrate to judges
-
-1. Run a valid image in MATLAB and show model/version, quality, referral score,
-   threshold, grade distribution and human-review requirement.
-2. Run a poor-quality image and show that prediction stops.
-3. Show the 25/25 parity result and explain its limited meaning.
-4. Open the SimEvents architecture and identify each queue and server.
-5. Compare increased load with the additional-camera scenario: completions rise
-   from 68 to 105 and maximum queue falls from 38 to 4 under the configured
-   simulation.
-6. State that field measurements must replace assumed service times before a
-   deployment-capacity claim.
-
 ## Current limits
 
 - V3.4 DME, lesion, vessel, optic-disc and fovea outputs are unavailable.
