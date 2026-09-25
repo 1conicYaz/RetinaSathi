@@ -1,0 +1,106 @@
+{
+  "schema_version": "2.0",
+  "model_version": "lesion-segmentation-v3",
+  "status": "ready_experimental",
+  "task": "lesions",
+  "dataset": "IDRiD",
+  "classes": [
+    "microaneurysms",
+    "haemorrhages",
+    "hard_exudates",
+    "soft_exudates"
+  ],
+  "input_size": 256,
+  "thresholds": {
+    "microaneurysms": 0.6,
+    "haemorrhages": 0.7,
+    "hard_exudates": 0.7,
+    "soft_exudates": 0.7
+  },
+  "inference": {
+    "mode": "overlap_tiles",
+    "tile_size": 256,
+    "overlap": 64,
+    "minimum_region_pixels": 3
+  },
+  "preprocessing": {
+    "retinal_crop": false,
+    "aspect_ratio_safe_resize": false,
+    "enhancement": "none",
+    "normalization": {
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    },
+    "resampling": "native-resolution tiles"
+  },
+  "validation": {
+    "thresholds": {
+      "microaneurysms": 0.6,
+      "haemorrhages": 0.7,
+      "hard_exudates": 0.7,
+      "soft_exudates": 0.7
+    },
+    "per_class": {
+      "microaneurysms": {
+        "dice": 0.19575421961525544,
+        "iou": 0.1084964264533361,
+        "precision": 0.17446538954168292,
+        "recall": 0.22296059069477805,
+        "ground_truth_positive_pixels": 112410
+      },
+      "haemorrhages": {
+        "dice": 0.3869340916500032,
+        "iou": 0.239874942274242,
+        "precision": 0.28166985730189403,
+        "recall": 0.6178242425347588,
+        "ground_truth_positive_pixels": 1206458
+      },
+      "hard_exudates": {
+        "dice": 0.5886294641506389,
+        "iou": 0.4170623158123408,
+        "precision": 0.5934777966463631,
+        "recall": 0.5838597052850611,
+        "ground_truth_positive_pixels": 999610
+      },
+      "soft_exudates": {
+        "dice": 0.3238465915976463,
+        "iou": 0.1932082051524894,
+        "precision": 0.20600608777504084,
+        "recall": 0.7566940112403088,
+        "ground_truth_positive_pixels": 301949
+      }
+    },
+    "mean_dice": 0.37379109175338593,
+    "image_count": 11
+  },
+  "validation_scope": "full-resolution overlap-tile internal validation",
+  "release_gate": {
+    "minimum_mean_dice": 0.2,
+    "minimum_dice_per_class": {
+      "microaneurysms": 0.05,
+      "haemorrhages": 0.15,
+      "hard_exudates": 0.3,
+      "soft_exudates": 0.15
+    },
+    "class_pass": {
+      "microaneurysms": true,
+      "haemorrhages": true,
+      "hard_exudates": true,
+      "soft_exudates": true
+    },
+    "passed": true
+  },
+  "official_test_used": false,
+  "checkpoint_sha256": "853337b24863341f9fdd86130272caaed103cabe60050895f7529c7db7a61495",
+  "validation_sha256": "b4ef99b7b2c3b4e1ed8174793565d245db96514ec495599e7643b1189254d012",
+  "onnx_sha256": "8fc7c40d33462872ad2d215cda6daaacb0d3d7ffaf0291e6e3ac4752d9ac668c",
+  "checkpoint_epoch": 27
+}

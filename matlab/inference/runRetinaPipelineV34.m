@@ -6,8 +6,12 @@ arguments
 end
 if ~isfield(config, "modelPath"), config.modelPath = "../models/retinasathi-v3-4.onnx"; end
 if ~isfield(config, "manifestPath"), config.manifestPath = "../models/retinasathi-v3-4.manifest.json"; end
+if ~isfield(config, "lesionModelPath"), config.lesionModelPath = "../models/retinasathi-lesions-v3-2.onnx"; end
+if ~isfield(config, "lesionManifestPath"), config.lesionManifestPath = "../models/retinasathi-lesions-v3-2.manifest.json"; end
 if ~isfile(imagePath), error("RetinaSathi:INVALID_FILE", "Image file not found: %s", imagePath); end
-try, original = imread(imagePath); catch exception
+try
+    original = imread(imagePath);
+catch exception
     error("RetinaSathi:CORRUPT_IMAGE", "Cannot read image: %s", exception.message);
 end
 [croppedForQuality, ~] = cropFundus(original);
@@ -16,12 +20,16 @@ quality = assessImageQuality(croppedForQuality);
 if quality.label == "poor"
     classifier = struct("status", "ungradeable", "reason", "Image quality gate requires recapture", ...
         "grade", [], "confidence", [], "referable", [], "dmeStatus", "not_assessed");
+    lesions = struct("status","retake_required","experimental",true, ...
+        "reason","Lesion analysis stopped because the image failed the quality gate.","masks",[],"regions",table(),"overlay",[]);
 else
     classifier = classifyDRV34(normalizedHWC, string(config.modelPath), string(config.manifestPath));
+    lesions = runLesionAnalysis(original,string(config.lesionModelPath),string(config.lesionManifestPath));
 end
 result = struct("apiVersion", "2.0", "modelGeneration", "v3.4", "original", original, ...
     "quality", quality, "preprocessing", preprocessing, "dr", classifier, ...
     "gradcam", struct("status", "unavailable", "reason", "MATLAB V3.4 attention parity is not yet validated"), ...
+    "lesions", lesions, ...
     "dme", struct("status", "not_assessed", "reason", "V3.4 has no DME head"), ...
     "requiresHumanReview", true, "disclaimer", "Research screening support only; not a diagnosis.");
 end

@@ -1,0 +1,31 @@
+experiment:
+  name: idrid_lesions_v3_patch
+  seed: 26038
+  architecture: mobile_unet
+data:
+  dataset: IDRiD
+  classes: [microaneurysms, haemorrhages, hard_exudates, soft_exudates]
+  official_test_locked: true
+preprocessing:
+  patch_size: 256
+  validation_samples_per_image: 8
+  training_samples_per_image: 10
+  inference_overlap: 64
+training:
+  epochs: 30
+  batch_size: 4
+  num_workers: 0
+  learning_rate: 0.0002
+  weight_decay: 0.0001
+  gradient_accumulation: 2
+  early_stopping_patience: 7
+  loss: focal_tversky
+validation:
+  threshold_grid: [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7]
+  minimum_region_pixels: 3
+  release_minimum_mean_dice: 0.20
+  release_minimum_dice_per_class:
+    microaneurysms: 0.05
+    haemorrhages: 0.15
+    hard_exudates: 0.30
+    soft_exudates: 0.15

@@ -51,6 +51,13 @@ verifyEqual(testCase, sha256File(path), ...
     "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
 end
 
+function testLesionModuleIsExplicitWhenModelMissing(testCase)
+result = runLesionAnalysis(zeros(64,64,3,"uint8"),"missing-lesion-model.onnx","");
+verifyEqual(testCase,result.status,"not_trained");
+verifyTrue(testCase,result.experimental);
+verifyEmpty(testCase,result.masks);
+end
+
 function deleteIfPresent(path)
 if isfile(path), delete(path); end
 end

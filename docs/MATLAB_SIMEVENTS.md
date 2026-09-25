@@ -96,7 +96,7 @@ on declared assumptions, not observed clinical throughput.
 
 ## Current limits
 
-- V3.4 DME, lesion, vessel, optic-disc and fovea outputs are unavailable.
+- V3.4 does not assess DME, vessels, optic disc or fovea. A separate V3.2 four-class lesion candidate can be shown in the MATLAB prototype, but it is experimental and does not determine V3.4 referral.
 - V3.4 explanation maps remain disabled after failing technical validation.
 - The quality gate is partly heuristic.
 - MATLAB parity does not prove clinical accuracy.
