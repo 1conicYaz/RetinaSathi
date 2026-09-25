@@ -11,7 +11,15 @@ result = runRetinaPipeline("/path/to/fundus.jpg", cfg);
 launchRetinaSathiApp(cfg)
 ```
 
-The Python side has genuine experimental lesion/vessel/localization artifacts, but the MATLAB layer reports those modules unavailable unless a compatible MATLAB network artifact is explicitly supplied. The baseline ONNX feature activation is not presented as MATLAB Grad-CAM. See `TOOLBOX_STATUS.md` for the current machine audit.
+The lesion module now points to the V3.2 experimental four-class ONNX candidate
+and its hash-bound manifest. It uses native-resolution tiles, Gaussian overlap
+blending, the frozen retinal-border margin, class-specific thresholds and
+connected-component regions. V3.2 passed the internal engineering gate with
+full-image mean Dice 0.3937, but visual QA still finds border and optic-disc
+false positives. MATLAB therefore labels every overlay experimental and keeps
+it separate from V3.4's grade and referral decision. The baseline ONNX feature
+activation is not presented as MATLAB Grad-CAM. See `TOOLBOX_STATUS.md` for the
+current machine audit.
 
 `importNetworkFromONNX` can generate a model-named `+package` of MathWorks adapter classes beside this folder. That machine-generated package is ignored and should be regenerated from the privately transferred ONNX model rather than committed.
 
@@ -59,6 +67,60 @@ cfg = struct("modelGeneration", "v3.4", ...
     "manifestPath", "../models/retinasathi-v3-4.manifest.json");
 launchRetinaSathiApp(cfg)
 ```
+
+To launch the complete local prototype with the current artifacts:
+
+```matlab
+cd('/path/to/X-Retina/matlab')
+launchV34LesionPrototype
+```
+
+To configure it manually, add both lesion artifact paths:
+
+```matlab
+cfg.lesionModelPath = "../models/retinasathi-lesions-v3-2.onnx";
+cfg.lesionManifestPath = "../models/retinasathi-lesions-v3-2.manifest.json";
+result = runRetinaPipelineV34("../runs/demo_cases/referable.jpg",cfg);
+launchRetinaSathiApp(cfg)
+```
+
+The **Lesion evidence** image tab then shows candidate masks in four colours:
+microaneurysms, haemorrhages, hard exudates and soft exudates. The app labels
+them experimental and requires ophthalmologist confirmation. A poor-quality
+image stops both grading and lesion analysis.
+
+The app presents the result in two levels:
+
+- **What this means** shows the referral decision, suggested DR grade, image
+  quality, five-grade probability chart, a plain-language explanation and the
+  next clinical action.
+- **Technical status** shows which research modules are available. DME,
+  lesion, vessel, optic-disc, fovea and attention outputs stay out of the main
+  clinical summary when they have not been validated.
+
+The referral score and grade confidence are intentionally shown separately.
+Referral score answers whether specialist review is recommended. Grade
+confidence is the largest of the five grade probabilities and describes
+certainty about the exact severity level; it is not model accuracy.
+
+The **Enhanced retinal view** and **Exact model input** are preprocessing
+views, not heatmaps. V3.4 square-pads the crop and applies Ben Graham-style
+contrast enhancement; the neutral-grey padding and coloured border halo in the
+exact input are expected consequences of that frozen preprocessing contract.
+The display-only enhanced view masks those padding artefacts without changing
+the array sent to the model.
+
+The **Proposed explainability** tab documents the future validation gate. It
+does not create a patient-specific attention map. A map should be enabled only
+after faithfulness, stability, lesion-mask comparison, clinician-usefulness and
+Python/ONNX/MATLAB parity checks pass.
+
+The **Future model roadmap** tab separates planned work from current evidence.
+It covers governed multi-dataset and Indian-camera expansion, larger-context
+segmentation, multi-task classification, teacher comparison, conditional
+knowledge distillation, independent student calibration, MATLAB parity,
+district-capacity simulation and prospective ophthalmologist evaluation. The
+full technical sequence is in `FUTURE_MODEL_DEVELOPMENT.md`.
 
 Accept the MATLAB port only after every fixed case has the same grade and
 referral decision. Keep tensor and logit differences in the generated report.

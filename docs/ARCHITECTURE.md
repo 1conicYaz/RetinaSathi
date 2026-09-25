@@ -1,115 +1,56 @@
 # RetinaSathi architecture
 
-RetinaSathi separates MATLAB-compatible image inference, SimEvents operational
-simulation and the supporting web deployment. This keeps model evidence,
-capacity estimates and product behavior distinct.
-
-## System view
+RetinaSathi combines a React web application, a Python inference service, private InsForge records, a MATLAB image-analysis prototype, and a SimEvents clinic simulation. Read this diagram as the **local V3.4 candidate** path. The public V1 backup and older V2 research modules have separate model contracts.
 
 ```mermaid
 flowchart TD
-    Camera[Fundus camera] --> Quality{Quality and recapture}
-    Quality -->|Gradeable| V34[RetinaSathi V3.4 ONNX]
-    V34 --> MATLAB[MATLAB preprocessing, calibration and parity]
-    MATLAB --> Decision[Referral score and Grade 0–4]
-    Decision --> Human[Mandatory human review]
-    Human --> Report[Screening-support report]
-    Workflow[Simulink / SimEvents operational model] -. models queues and resources .-> Camera
-    Workflow -. capacity planning .-> Human
-    Web[React + InsForge + Azure interface] -. supporting deployment path .-> V34
-    Web -. protected workflow .-> Report
+    Camera[Fundus photograph] --> Quality{Deterministic quality gate}
+    Quality -->|ungradeable| Recapture[Retake; no DR decision]
+    Quality -->|gradeable| Prep[Crop, pad, enhance, normalize]
+    Prep --> V34[Frozen V3.4 DINOv2 ONNX]
+    V34 --> Referral[Calibrated referral score]
+    V34 --> Grade[DR grade 0–4 probabilities]
+    Referral --> Review[Human review]
+    Grade --> Review
+    Review --> Report[Screening support report]
+    Report --> InsForge[Private owner-scoped records]
+    Prep -. optional research view .-> Lesions[V3.2 experimental lesion candidate masks]
+    Lesions -. clinician confirmation required .-> Review
 ```
 
-The diagram contains two related paths. Solid arrows show one-image screening.
-Dotted arrows show simulation or deployment support; SimEvents does not execute
-the image model for each synthetic visit.
-
-## Retinal inference
-
-```mermaid
-flowchart TD
-    Image[Fundus photograph] --> Gate{Quality gate}
-    Gate -->|Poor| Stop[Stop inference and request recapture]
-    Gate -->|Gradeable| Crop[Retina crop and square padding]
-    Crop --> Enhance[392 px Ben Graham enhancement]
-    Enhance --> Normalize[ImageNet normalization]
-    Normalize --> Encoder[Partially adapted DINOv2-S/14]
-    Encoder --> Binary[Referable head]
-    Encoder --> Ordinal[Ordinal Grade 0–4 head]
-    Encoder --> Nominal[Five-class head]
-    Binary --> Calibrate[Saved calibration and threshold]
-    Ordinal --> Blend[Calibrated grade blend]
-    Nominal --> Blend
-    Calibrate --> Decision[Referral and uncertainty policy]
-    Blend --> Decision
-    Decision --> Human[Mandatory human review]
-```
-
-V3.4 returns a five-grade probability distribution and a separately calibrated
-referable probability. DME is not assessed. Lesion, vessel, optic-disc and
-fovea research experiments are not presented as V3.4 clinical outputs.
-
-The selected seed-26038 model is exported to a fixed ONNX graph. MATLAB verifies
-the ONNX SHA-256 recorded in the manifest, reproduces the preprocessing and
-calibration policy, and matched 25/25 Python reference decisions in the parity
-cohort.
-
-## Supporting application and storage
+## Runtime modes
 
 ```mermaid
 flowchart LR
-    Operator[Operator] --> PWA[React PWA]
-    PWA --> Auth[InsForge authentication]
-    Auth --> Fn[Authenticated server function]
-    Fn --> Azure[Protected Azure V3.4 ONNX service]
-    Azure --> Result[Versioned result contract]
-    Result --> DB[Protected screening record]
-    Result --> Private[Private image storage]
-    DB --> Reviewer[Reviewer view]
-    Reviewer --> Review[Append-only review]
-    Review --> Report[Printable screening-support report]
+    Web[React PWA] --> Router{Inference mode}
+    Router -->|local| Local[Local FastAPI + selected model]
+    Router -->|cloud| Proxy[Authenticated InsForge function]
+    Proxy --> Cloud[Protected cloud inference API]
+    Router -->|auto| Probe[Try local, then cloud]
+    Probe --> Local
+    Probe --> Proxy
+    Probe -->|neither| Unavailable[No assessment / explicit unavailable state]
+    Local -. same frozen ONNX .-> MATLAB[MATLAB prototype]
 ```
 
-Authentication, private storage and owner-scoped database policies are handled
-through InsForge. The client stores a pseudonymous patient reference rather
-than a patient name. A local FastAPI runtime is available for development and
-demo fallback. The optional seven-day browser retry queue requires stronger
-device security and recovery testing before any pilot.
-
-## SimEvents operational model
+## District workflow
 
 ```mermaid
 flowchart LR
-    Arrival[Patient arrivals] --> CQ[Capture queue]
-    CQ --> Camera[Fundus camera server]
-    Camera --> Quality{Quality gate}
-    Quality -->|Poor| Recapture[Recapture server]
-    Recapture --> CQ
-    Quality -->|Accepted| Network[Network transfer]
-    Network --> AQ[AI queue]
-    AQ --> AI[AI service-time server]
-    AI --> Route{Decision route}
-    Route -->|Routine| Routine[Routine outcome]
-    Route -->|Referable or uncertain| RQ[Clinical review queue]
-    RQ --> Reviewer[Human reviewer]
-    Reviewer --> Complete[Reviewed outcome]
+    Arrival[Patient arrivals] --> Acquire[Camera acquisition queue]
+    Acquire --> QGate{Quality gate}
+    QGate -->|retake| Acquire
+    QGate --> Upload[Network/upload delay]
+    Upload --> AI[AI server queue]
+    AI --> Priority{Risk/uncertainty priority}
+    Priority --> Review[Reviewer queue]
+    Review --> Refer[Referral/follow-up]
 ```
 
-One entity represents one screening visit. The workflow uses configured arrival
-rates, service times, capacities, image size, bandwidth and routing rates. The
-AI server represents measured/configured station time; it does not execute ONNX
-for each synthetic visit.
+## Version policy
 
-The seven scenarios test baseline operation, constrained bandwidth, increased
-load, an additional camera, an additional reviewer, priority review and a
-district configuration. The automatic verifier checks accounting, utilization,
-network behaviour, resource sensitivity and annual-equivalent capacity.
-
-## Safety boundaries
-
-- Poor-quality images do not receive a DR prediction.
-- Every output requires human review.
-- Attention is model influence, not a lesion map.
-- Missing modules are reported as unavailable or not assessed.
-- Simulation figures are planning estimates, not hospital observations.
-- Source validation and software parity do not establish clinical readiness.
+- `V1`: preserved 224×224 MobileNetV3 multi-task baseline and lightweight public backup.
+- `V2`: locked EfficientNet-B3 research artifact with an official-test result and a documented Messidor domain-shift failure. Its Grad-CAM, vessel, and localization outputs are version-specific research features.
+- `V3.4`: local frozen DINOv2 candidate with a dedicated referral head and grade outputs. DME is **not assessed**. Its unvalidated attention map remains disabled.
+- `V3.2 lesion segmentation`: separate optional four-class candidate overlay. It has real pixel-level training and measured internal Dice, but visible false positives prevent a validated lesion claim.
+- Model binaries and medical datasets stay outside Git. Small manifests define hashes, preprocessing, calibration, and status; unavailable modules must say so explicitly.

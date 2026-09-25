@@ -50,10 +50,13 @@ artifacts/*
 # Generated MATLAB and Simulink state
 simulink/results/*.mat
 simulink/results/**/*.mat
+simulink/results/simevents/*.csv
+simulink/results/simevents/*.json
 simulink/slprj/
 *.slxc
 *.autosave
 matlab/+idrid_multitask/
 matlab/+retinasathi_v3_4/
+matlab/+retinasathi_lesions_v3_2/
 
 .insforge/project.parent.json

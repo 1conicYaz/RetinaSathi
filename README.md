@@ -1,228 +1,137 @@
-# RetinaSathi / X-Retina
+# RetinaSathi
 
-RetinaSathi is a MathWorks-integrated diabetic-retinopathy screening-support
-research prototype for Smart India Hackathon problem statement SIH26038. It
-combines a frozen retinal AI model, reproducible MATLAB execution, an executable
-Simulink/SimEvents healthcare-workflow model, mandatory human review and a
-supporting authenticated web/cloud demonstration.
+### Retinal screening support, from image capture to human review
 
-> Research screening support only. RetinaSathi is not a diagnosis or a
-> clinically approved medical device.
+RetinaSathi is a Smart India Hackathon 26038 research prototype. A health worker uploads a photograph of the back of the eye (a *fundus image*). The system checks image quality, estimates diabetic retinopathy (DR) referral risk and severity, and sends the result for human review. A separate Simulink model explores how the workflow behaves at clinic and district scale.
 
-## SIH26038 — MathWorks problem statement
+**Start here:** [See the prototype](#see-the-prototype) · [Understand the workflow](#how-it-works) · [Run it locally](#run-the-project) · [Explore the folders](#repository-map) · [Read the documentation](docs/README.md)
 
-SIH26038 asks for a MATLAB-based pipeline covering image quality, retinal
-structure and lesion analysis, ICDR Grade 0–4, referable-DR sensitivity above
-90% and specificity above 85%, clinically meaningful explainability and
-Simulink capacity planning for rural programs serving more than 100,000 people
-annually.
+> **Research use only.** This is a screening-support prototype, not a diagnosis or medical device. An ophthalmologist makes the clinical decision. Prospective Indian clinical validation is still needed.
 
-[Read the requirement-by-requirement status](docs/SIH26038.md). RetinaSathi
-meets the referral targets on retrospective source validation and implements
-the MATLAB and SimEvents foundations. Validated lesion-level explainability,
-complete retinal structure analysis and prospective clinical evidence remain
-future work.
+## See the prototype
 
-## Problem
+| Web application | MATLAB image-analysis prototype |
+|:---:|:---:|
+| ![RetinaSathi web app landing page on desktop](docs/playwright/evidence/desktop-1600x900.png) | ![Actual MATLAB V3.4 screening app showing referral, grade probabilities, and an experimental lesion candidate overlay](docs/images/matlab-v3-4-lesion-prototype.png) |
+| Actual browser capture of the public app landing page. Its sample Grade 2 card is illustrative UI content. | Actual V3.4 MATLAB prototype screenshot supplied by the project owner. The coloured regions are experimental lesion candidates requiring clinician confirmation. |
 
-Rural screening is constrained by variable portable-camera image quality,
-limited connectivity and specialist capacity. A useful system must reject
-unsafe inputs, prioritize referable or uncertain cases and help planners
-understand camera, compute, network and reviewer bottlenecks.
+| Simulink clinic workflow | SimEvents results |
+|:---:|:---:|
+| ![Executable SimEvents workflow with capture, AI, and review queues](docs/images/retinasathi_simevents_workflow.png) | ![SimEvents scenario results dashboard](docs/images/retinasathi_simevents_results.png) |
+| Executable queue and resource model. Each entity represents a screening visit. | Simulated engineering outcomes, not observed patient throughput. |
 
-## Proposed solution
+<details>
+<summary>View the mobile web app capture</summary>
 
-~~~text
-Fundus camera
-    → image quality / recapture
-    → RetinaSathi V3.4 AI
-         ├─ dedicated referable-DR score
-         └─ ICDR Grade 0–4 estimate
-    → MATLAB-compatible calibrated decision contract
-    → mandatory human review / referral
+![RetinaSathi web app at phone width](docs/playwright/evidence/mobile-390x844.png)
 
-The same clinic assumptions feed an executable SimEvents capacity model.
-The React + InsForge + Azure application is the supporting deployment interface.
-~~~
+</details>
 
-Poor-quality images receive no DR result. DME, lesions, vessels, optic disc,
-fovea and V3.4 explainability are reported as unavailable rather than inferred
-from an unvalidated output.
+**[Public web demo](https://69exmaqk.insforge.site):** The [24 September deployment verification](docs/AZURE_DEPLOYMENT_VERIFICATION.md) recorded a protected **V3.4 ONNX** runtime behind an authenticated InsForge function and Azure Container Apps. The screenshot shows the interface, not a clinical validation result. The local V3.4 path below allows independent engineering checks.
 
-## MathWorks architecture
+## How it works
 
-### MATLAB implementation
+```mermaid
+flowchart LR
+  A[Fundus photo] --> B{Image quality}
+  B -->|Unusable| C[Retake image]
+  B -->|Usable| D[Preprocess]
+  D --> E[DR model]
+  E --> F[Referral score + grade 0–4]
+  F --> G[Human review]
+  G --> H[Record and report]
+  E -. frozen ONNX .-> M[MATLAB prototype]
+  H -. workflow assumptions .-> S[Simulink simulation]
+```
 
-MATLAB imports the frozen 84.27 MiB V3.4 ONNX graph and reproduces retinal
-cropping, square padding, 392 px Ben Graham enhancement, normalization,
-calibration, thresholding and grade/referral postprocessing.
+**In plain language:** “referable” means the image should be reviewed by an eye specialist. Grade 0–4 is estimated DR severity. A poor image receives **no** grade or referral decision; the operator is asked to retake it. V3.4 does **not** provide validated DME assessment or a validated patient-specific explanation map.
 
-Verified release evidence:
+The web app uses React and TypeScript. InsForge provides authentication, private image storage, and owner-scoped records. FastAPI runs model inference; cloud screening passes through an authenticated InsForge function to a protected Azure Container App. MATLAB independently implements retinal preprocessing and imports the frozen ONNX model. Simulink/SimEvents models queues, cameras, network delays, and reviewer capacity; it does not classify each simulated patient's image.
 
-- 8 MATLAB tests passed.
-- 25/25 Python-reference cases matched grade and referral decisions.
-- The manifest binds model identity, SHA-256, preprocessing and threshold.
+## What has been built
 
-Parity demonstrates implementation consistency. It is not clinical validation.
+| Area | Current state | Evidence and detail |
+|---|---|---|
+| Web app | Sign-in, upload, quality feedback, DR results, history, human review, and printable report | [Architecture](docs/ARCHITECTURE.md) · [Deployment verification](docs/AZURE_DEPLOYMENT_VERIFICATION.md) |
+| DR model | V3.4 partially adapted DINOv2-S/14 with separate referral and severity outputs; verified cloud runtime and local research path | [V3.4 results](docs/V3_4_RESULTS.md) · [Deployment verification](docs/AZURE_DEPLOYMENT_VERIFICATION.md) |
+| Training | Data manifest, patient-aware development splits, versioned configs, training and evaluation scripts, three-seed stability study | [Training guide](docs/MODEL_TRAINING_GUIDE.md) · [Stability results](docs/V3_4_THREE_SEED_STABILITY.md) |
+| Lesion segmentation | Four-class V3.2 **experimental** mask candidate for microaneurysms, haemorrhages, hard exudates, and soft exudates; internal 11-image full-image mean Dice **0.3937**. Border and optic-disc false positives remain; clinician confirmation is required. | [Lesion implementation and limitations](docs/LESION_SEGMENTATION_V3_IMPLEMENTATION.md) |
+| Other image modules | Learned quality, vessel segmentation, disc/fovea localization, and earlier V2 attention experiments have separate evidence and availability gates. They are not validated V3.4 clinical outputs. | [Complete explanation](docs/COMPLETE_PROJECT_EXPLANATION.md) |
+| MATLAB | Native V3.4 preprocessing, ONNX inference, calibration, app, and report; grade and referral agreed on **25/25 engineering parity cases** | [MATLAB guide](matlab/README.md) · [Parity report](docs/V3_4_MATLAB_PARITY_REPORT.md) |
+| Simulink | Executable SimEvents workflow and seven scenario runs | [Simulink guide](simulink/README.md) · [Simulation results](docs/SIMULATION_RESULTS.md) |
+| Clinical readiness | Human review required; prospective Indian validation pending | [Pilot plan](docs/V3_4_CLINICAL_PILOT_AND_APP_INTEGRATION.md) |
 
-### Simulink / SimEvents workflow
+On a 400-image, patient-separated **DeepDRiD source-validation** set, selected V3.4 seed 26038 recorded **92.22% referable sensitivity** and **91.36% specificity**. This is retrospective research evidence, not an untouched prospective clinical test. Exact five-grade classification is weaker, especially for rare grades. Earlier V2 results and the model-selection path are explained in the [selection report](docs/MODEL_SELECTION_AND_APPROACH_REPORT.md).
 
-~~~text
-arrival → capture queue → camera → quality/recapture → network transfer
-        → AI queue → decision routing → routine outcome or clinical review
-~~~
+## Run the project
 
-One entity is one screening visit. The model measures queue depth, waiting time,
-utilization, throughput and bottlenecks across seven scenarios. It does not run
-ONNX for every synthetic entity.
+### 1. Explore the web interface
 
-Verified release evidence:
+Prerequisites: Node.js and npm. Sign-in and saved records require InsForge browser configuration for your project in `.env.local`; the repository does not include credentials.
 
-- 14/14 SimEvents software checks passed.
-- Under the configured high-load scenario, adding a second camera increased
-  completions from 68 to 105 and reduced maximum queue from 38 to 4.
-- The district scenario estimated 127,000 visits across 250 identical operating
-  days.
-
-Every capacity number is a **simulation**, not observed field throughput.
-
-![SimEvents workflow](docs/images/retinasathi_simevents_workflow.png)
-
-[Run and interpret MATLAB/SimEvents](docs/MATLAB_SIMEVENTS.md).
-
-## AI model — V3.4
-
-The selected candidate partially adapts the final two blocks of DINOv2-S/14 and
-uses three heads: dedicated referable DR, ordinal severity and direct five-class
-grading. The release was selected after controlled EfficientNet-B3, frozen
-DINOv2 and frozen RETFound comparisons.
-
-Three seeded fine-tuning runs from the same V3.2 initialization produced:
-
-| Metric | Three-seed mean | Range |
-|---|---:|---:|
-| Referable sensitivity | 93.89% | 92.22–95.00% |
-| Referable specificity | 90.61% | 89.55–91.36% |
-| AUROC | 0.9781 | 0.9756–0.9807 |
-| AUPRC | 0.9763 | 0.9745–0.9787 |
-| Quadratic weighted kappa | 0.8247 | 0.7910–0.8635 |
-| Macro-F1 | 0.5666 | 0.5339–0.6017 |
-
-These are patient-separated DeepDRiD **source-validation** results. They are not
-prospective clinical evidence. Grade 2 varies most between seeds and Grade 4
-recall remains weak; V3.4 is stronger for referral screening than autonomous
-exact grading.
-
-[Model rationale](docs/MODEL_SELECTION_AND_APPROACH_REPORT.md) ·
-[selected-seed results](docs/V3_4_RESULTS.md) ·
-[three-seed stability](docs/V3_4_THREE_SEED_STABILITY.md)
-
-## Deployment and web demonstration
-
-~~~text
-React interface → InsForge authentication → authenticated server function
-                → protected Azure Container Apps → V3.4 ONNX Runtime
-                → private screening record and required human review
-~~~
-
-- Demo: <https://69exmaqk.insforge.site/>
-- Runtime identity: **classifier-v3.4-seed26038**
-- Input: 392 × 392 RGB after the frozen preprocessing contract
-- Referral threshold: **0.2073261738**
-- Azure configuration at verification: minimum 0, maximum 1 replica
-
-Scale-to-zero reduces idle cost but can add cold-start delay. The current
-one-replica release has not demonstrated a 5,000-case/two-minute workload.
-[Deployment verification](docs/AZURE_DEPLOYMENT_VERIFICATION.md).
-
-## Dataset strategy
-
-V3.4 development used APTOS 2019, IDRiD and patient-grouped DeepDRiD under the
-recorded manifest policy. EyePACS was not used. Its archived copy was never
-admitted to the verified V3 pipeline.
-
-The current EyePACS decision is **EXPERIMENT FIRST**: verify competition terms,
-archive integrity, subject grouping, labels, quality and cross-source duplicates
-before a controlled development-only comparison. Dataset images never belong in
-this repository. [Read the dataset and EyePACS decision](docs/DATASET_STRATEGY.md).
-
-## Repository structure
-
-| Path | Purpose |
-|---|---|
-| **matlab/** | Quality, preprocessing, ONNX inference, calibration, app and tests |
-| **simulink/** | Executable SimEvents model, scenarios and verification |
-| **ml/** | Dataset, model, training, calibration and evaluation code |
-| **compute/** | FastAPI/ONNX inference service and contract tests |
-| **src/** | Supporting React screening and review interface |
-| **functions/**, **migrations/** | InsForge proxy and protected data contract |
-| **configs/** | Reproducible experiment definitions |
-| **models/** | Safe manifests only; binary weights are excluded |
-| **artifacts/** | Small aggregate evidence and provenance records |
-| **docs/** | Requirements, evidence, runbooks and research roadmap |
-
-Raw datasets, retinal photographs, credentials, checkpoints, ONNX binaries,
-generated MATLAB packages and local experiment outputs are excluded from Git.
-
-## Quick start
-
-### Web and Python checks
-
-~~~bash
+```bash
+git clone https://github.com/1conicYaz/X-Retina.git
+cd X-Retina
 cp .env.example .env.local
 npm ci
+npm run dev
+```
+
+Open the URL printed by Vite. You can explore the landing page without training a model. Authenticated screening requires the configured backend.
+
+### 2. Run local V3.4 screening
+
+Prerequisites: Python 3.11, the requirements below, and the **hash-matching V3.4 checkpoint and validation report**. Checkpoints and medical images are intentionally excluded from Git. Obtain them through the team's approved handoff. The [integration guide](docs/V3_4_CLINICAL_PILOT_AND_APP_INTEGRATION.md#which-checkpoint-is-loaded-in-the-application) records the expected artifact paths.
+
+```bash
 python3.11 -m venv .venv
 .venv/bin/python -m pip install -r compute/requirements.txt
-./scripts/run_tests.sh
-~~~
+./scripts/run_v3_4_local.sh
+```
 
-Run the local stack:
+The launcher starts FastAPI at `127.0.0.1:8000` and Vite at the printed local address. Visit `/health` and `/model-card` on the API to see what loaded. The service rejects a checkpoint that does not match its validation record.
 
-~~~bash
-./scripts/run_full_stack_local.sh
-~~~
+### 3. Run MATLAB and Simulink
 
-### MATLAB V3.4 parity
+Follow the [step-by-step MATLAB and Simulink user guide](docs/MATLAB_SIMULINK_USER_GUIDE.md) for software requirements, model-file placement, window controls, example commands, scenario runs, and troubleshooting. The engineering parity gate is `./scripts/verify_v3_4_matlab.sh`; it also requires local parity fixtures. MATLAB operates on actual images; SimEvents operates on simulated visits.
 
-Place the hash-matching model at **models/retinasathi-v3-4.onnx**, then:
+### 4. Reproduce model research
 
-~~~bash
-./scripts/verify_v3_4_matlab.sh
-~~~
+Raw datasets, licensed images, checkpoints, and full training runs are **not** in this GitHub repository. Start with the [training guide](docs/MODEL_TRAINING_GUIDE.md), [data card](docs/V3_DATA_CARD.md), [dataset inventory](docs/DATASET_INVENTORY.md), and [V3.4 experiment record](docs/V3_4_RESULTS.md). With authorized local datasets and `RETINASATHI_DATA_ROOT` set, these are the entry points:
 
-### SimEvents
+```text
+scripts/build_v3_data_manifest.py   → validate sources, labels, hashes, and splits
+configs/classifier_v3_4.yaml        → V3.4 training configuration
+scripts/train_classifier_v3_4.sh    → PyTorch training
+scripts/audit_v3_candidate.py       → candidate evaluation and gates
+scripts/export_v3_4_onnx.py         → frozen inference artifact
+scripts/verify_v3_4_matlab.sh       → Python/ONNX/MATLAB parity
+```
 
-~~~matlab
-cd('simulink')
-report = verify_simevents_workflow(true, "results/simevents");
-~~~
+Read the [training guide](docs/MODEL_TRAINING_GUIDE.md) before a new run. Keep the official test partition out of model selection. Lesion training has its own [implementation notes](docs/LESION_SEGMENTATION_V3_IMPLEMENTATION.md); a segmentation mask is different from a model-attention map.
 
-## Current status and limitations
+## Repository map
 
-| Area | Status |
+| Folder | What a new reader will find |
 |---|---|
-| V3.4 referral and Grade 0–4 | Implemented research candidate |
-| MATLAB ONNX execution and parity | Verified software implementation |
-| SimEvents patient-flow model | Verified simulation software |
-| Authenticated web/Azure demonstration | Implemented; verify live revision before demo |
-| Image-quality gate | Implemented, partly heuristic |
-| DME and retinal structure/lesion outputs | Unavailable in V3.4 |
-| V3.4 explainability | Disabled pending technical and clinician validation |
-| Indian intended-camera multi-site evaluation | Not performed |
-| Prospective clinical validation/regulatory readiness | Not established |
-| Encrypted edge/offline pilot | Future research |
+| [`src/`](src/) and [`public/`](public/) | Web interface and static assets |
+| [`functions/`](functions/) | Authenticated cloud inference proxy |
+| [`compute/`](compute/) | FastAPI inference service, model runtimes, and API tests |
+| [`ml/`](ml/) and [`configs/`](configs/) | Data processing, models, training, evaluation, and experiment settings |
+| [`models/`](models/) | Small model manifests; large binaries stay outside Git |
+| [`matlab/`](matlab/) | Image-analysis app, V3.4 inference, and tests |
+| [`simulink/`](simulink/) | SimEvents builder, scenarios, and result summaries |
+| [`scripts/`](scripts/) | Launchers, audits, export, and verification commands |
+| [`docs/`](docs/) | [Guided documentation index](docs/README.md), evidence, and historical notes |
+| [`migrations/`](migrations/) | Database schema and access-control migrations |
+| [`artifacts/`](artifacts/) | Small versioned audit summaries; generated or sensitive output is ignored |
 
-## Research roadmap
+The folders follow **parts of the system**. For an end-to-end tour, use the [plain-language project explanation](docs/COMPLETE_PROJECT_EXPLANATION.md). Historical reports remain for provenance; the V3.4 links above describe the current local candidate.
 
-Future work follows **Research → Hypothesis → Experiment → Validation →
-Integration**. Priorities are ophthalmologist workflow research, independent
-Indian intended-camera evaluation, quality/OOD safety, validated explainability,
-exact-grade improvement, controlled EyePACS experiments, knowledge distillation
-and secure offline/edge operation.
+## Verify and contribute
 
-[Read the staged roadmap](docs/ROADMAP.md).
+```bash
+./scripts/run_tests.sh
+```
 
-## Documentation
-
-[Documentation index](docs/README.md) · [architecture](docs/ARCHITECTURE.md) ·
-[SIH26038 alignment](docs/SIH26038.md)
+This runs lint, TypeScript checks, the web build, and Python unit tests after the Python environment is prepared. MATLAB and Simulink have separate verification commands in their READMEs. Never commit `.env.local`, patient images, raw medical datasets, or model checkpoints. Tie every model-performance statement to a reproducible report and name the evaluated split.
